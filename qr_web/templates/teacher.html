@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Oluşturma Paneli</title>
+
+    <!-- Modern Font (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #111827;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1050px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin: auto;
+        }
+
+        /* Üst Başlık & Çıkış Alanı */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #000000;
+            letter-spacing: -0.02em;
+        }
+
+        .logout-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #4b5563;
+            text-decoration: none;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #f3f4f6;
+            color: #111827;
+            border-color: #d1d5db;
+        }
+
+        /* 2 Sütunlu Grid Izgara (QR Yanda, Liste Yanda) */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* Sol & Sağ Kart Kutuları */
+        .panel-box {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        /* QR Tarafı */
+        .qr-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .qr-wrapper {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #f3f4f6;
+            margin-bottom: 1.25rem;
+            display: inline-block;
+        }
+
+        .qr-wrapper img {
+            width: 230px;
+            height: 230px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .timer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: #000000;
+            color: #ffffff;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-text {
+            font-size: 0.825rem;
+            color: #6b7280;
+        }
+
+        .action-button {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: #000000;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease, transform 0.1s ease;
+        }
+
+        .action-button:hover {
+            opacity: 0.85;
+        }
+
+        .action-button:active {
+            transform: scale(0.99);
+        }
+
+        /* Liste Tarafı */
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.85rem;
+            border-bottom: 1px solid #f3f4f6;
+            margin-bottom: 1rem;
+        }
+
+        .list-header h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .count-badge {
+            background: #f3f4f6;
+            color: #374151;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .student-list {
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .student-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .student-list::-webkit-scrollbar-thumb {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+
+        .student {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 0.5rem;
+            border-bottom: 1px solid #f9fafb;
+            transition: background 0.15s ease;
+        }
+
+        .student:hover {
+            background: #fafafa;
+            border-radius: 6px;
+        }
+
+        .student:last-child {
+            border-bottom: none;
+        }
+
+        .student-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .student-time {
+            font-size: 0.8rem;
+            color: #6b7280;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .empty {
+            color: #9ca3af;
+            text-align: center;
+            padding: 3rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        /* Mobil Cihazlar İçin Duyarlı Düzen */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.75rem;
+            }
+
+            .main-container {
+                padding: 1.25rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .qr-wrapper img {
+                width: 200px;
+                height: 200px;
+            }
+
+            .student-list {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-container">
+
+        <div class="header">
+            <h1>QR Açma Paneli</h1>
+            <a class="logout-btn" href="{{ url_for('logout') }}">
+                Çıkış Yap
+            </a>
+        </div>
+
+        <div class="dashboard-grid">
+
+            <!-- ================================= -->
+            <!-- SOL SÜTUN: QR ALANI -->
+            <!-- ================================= -->
+            <div class="panel-box qr-section" id="qr-area">
+
+                {% if not qr_image %}
+                <p class="info-text" style="margin-bottom: 1.25rem;">
+                    QR henüz açılmadı.
+                </p>
+
+                <form method="POST" action="/start-attendance" style="width: 100%;">
+                    <button class="action-button" type="submit">
+                        QR'ı Aç
+                    </button>
+                </form>
+                {% else %}
+                <div class="qr-wrapper">
+                    <img id="qr-image" src="data:image/png;base64,{{ qr_image }}" alt="QR">
+                </div>
+
+                <div class="timer-badge">
+                    QR Değişimine:
+                    <span id="timer">{{ remaining_seconds }}</span>
+                    sn
+                </div>
+
+                <p class="info-text">
+                    QR kodu 30 saniyede bir yenilenir.
+                    Toplam yoklama süresi 120 saniyedir.
+                </p>
+
+                <form method="POST" action="/start-attendance" style="width: 100%; margin-top: 0.75rem;">
+                    <button class="action-button" type="submit">
+                        Yeniden Aç
+                    </button>
+                </form>
+                {% endif %}
+
+            </div>
+
+            <!-- ================================= -->
+            <!-- SAĞ SÜTUN: OKUTAN LİSTESİ -->
+            <!-- ================================= -->
+            <div class="panel-box">
+
+                <div class="list-header">
+                    <h2>QR Okutanlar</h2>
+                    <span class="count-badge">
+                        <span id="attendance-count">{{ attendance|length }}</span> Kişi
+                    </span>
+                </div>
+
+                <div class="student-list" id="attendance-list">
+                    {% if attendance %}
+                    {% for student in attendance %}
+                    <div class="student">
+                        <span class="student-name">
+                            {{ student.name }}
+                        </span>
+                        <span class="student-time">
+                            {{ student.time }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="empty">
+                        Henüz qr okutan yok.
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        async function updateTeacherScreen() {
+
+            try {
+
+                const response = await fetch(
+                    "/api/teacher-state",
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+
+                // =============================================
+                // QR
+                // =============================================
+
+                const qrImage =
+                    document.getElementById("qr-image");
+
+                if (qrImage && data.qr_image) {
+
+                    qrImage.src =
+                        "data:image/png;base64," +
+                        data.qr_image;
+                }
+
+                // =============================================
+                // SAYAÇ
+                // =============================================
+
+                const timer =
+                    document.getElementById("timer");
+
+                if (timer) {
+
+                    timer.textContent =
+                        data.remaining_seconds;
+                }
+
+                // =============================================
+                // YOKLAMA SAYISI
+                // =============================================
+
+                const count =
+                    document.getElementById(
+                        "attendance-count"
+                    );
+
+                if (count) {
+
+                    count.textContent =
+                        data.attendance.length;
+                }
+
+                // =============================================
+                // YOKLAMA LİSTESİ
+                // =============================================
+
+                const list =
+                    document.getElementById(
+                        "attendance-list"
+                    );
+
+                if (!list) {
+                    return;
+                }
+
+                list.innerHTML = "";
+
+                if (data.attendance.length === 0) {
+
+                    list.innerHTML =
+                        `<div class="empty">
+                        Henüz QR okutan yok.
+                    </div>`;
+
+                    return;
+                }
+
+                data.attendance.forEach(
+                    function (student) {
+
+                        const row =
+                            document.createElement("div");
+
+                        row.className = "student";
+
+                        const name =
+                            document.createElement("span");
+
+                        name.className =
+                            "student-name";
+
+                        name.textContent =
+                            student.name;
+
+                        const time =
+                            document.createElement("span");
+
+                        time.className =
+                            "student-time";
+
+                        time.textContent =
+                            student.time;
+
+                        row.appendChild(name);
+                        row.appendChild(time);
+
+                        list.appendChild(row);
+                    }
+                );
+
+            } catch (error) {
+
+                console.log(
+                    "Teacher ekranı güncellenemedi:",
+                    error
+                );
+            }
+        }
+
+        updateTeacherScreen();
+
+        setInterval(
+            updateTeacherScreen,
+            1000
+        );
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QR Okutanların Listesi</title>
+
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            background: #f4f6f9;
+
+            margin: 0;
+
+            padding: 30px;
+
+        }
+
+
+        .container {
+
+            max-width: 700px;
+
+            margin: auto;
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 15px;
+
+        }
+
+
+        h1 {
+
+            text-align: center;
+
+        }
+
+
+        .count {
+
+            text-align: center;
+
+            color: #666;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .student {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 15px 5px;
+
+            border-bottom: 1px solid #eee;
+
+        }
+
+
+        .name {
+
+            font-weight: bold;
+
+        }
+
+
+        .time {
+
+            color: #666;
+
+        }
+
+
+        .empty {
+
+            text-align: center;
+
+            color: #888;
+
+            padding: 20px;
+
+        }
+
+
+        .buttons {
+
+            text-align: center;
+
+            margin-top: 30px;
+
+        }
+
+
+        .button {
+
+            display: inline-block;
+
+            padding: 12px 20px;
+
+            margin: 5px;
+
+            border-radius: 8px;
+
+            text-decoration: none;
+
+            color: white;
+
+            background: #007bff;
+
+        }
+
+
+        .logout {
+
+            background: #dc3545;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <h1>
+        QR Okutanların Listesi
+    </h1>
+
+
+    <div class="count">
+
+        QR Okutanlar:
+
+        <span id="attendance-count">
+            {{ attendance|length }}
+        </span>
+
+    </div>
+
+
+    <div id="attendance-list">
+
+
+        {% if attendance %}
+
+
+            {% for student in attendance %}
+
+
+                <div class="student">
+
+
+                    <span class="name">
+
+                        {{ student.name }}
+
+                    </span>
+
+
+                    <span class="time">
+
+                        {{ student.time }}
+
+                    </span>
+
+
+                </div>
+
+
+            {% endfor %}
+
+
+        {% else %}
+
+
+            <div class="empty">
+
+                Henüz qr okutan kimse yok.
+
+            </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+
+    <div class="buttons">
+
+
+        <a
+            class="button"
+            href="{{ url_for('home') }}"
+        >
+
+            Ana Sayfaya Dön
+
+        </a>
+
+
+        <a
+            class="button logout"
+            href="{{ url_for('logout') }}"
+        >
+
+            Çıkış Yap
+
+        </a>
+
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+    // =====================================================
+    // QR LİSTESİNİ GÜNCELLE
+    // =====================================================
+
+    async function updateAttendance() {
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/attendance",
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                return;
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            const list =
+                document.getElementById(
+                    "attendance-list"
+                );
+
+
+            const count =
+                document.getElementById(
+                    "attendance-count"
+                );
+
+
+            // -------------------------------------------------
+            // OKUTAN SAYISI
+            // -------------------------------------------------
+
+            count.textContent =
+                data.attendance.length;
+
+
+            // -------------------------------------------------
+            // LİSTEYİ TEMİZLE
+            // -------------------------------------------------
+
+            list.innerHTML = "";
+
+
+            // -------------------------------------------------
+            // HİÇ OKUTAN YOKSA
+            // -------------------------------------------------
+
+            if (
+                data.attendance.length === 0
+            ) {
+
+                list.innerHTML = `
+
+                    <div class="empty">
+
+                        Henüz qr
+                        okutan kimse yok.
+
+                    </div>
+
+                `;
+
+                return;
+
+            }
+
+
+            // -------------------------------------------------
+            // OKUTANLARI EKLE
+            // -------------------------------------------------
+
+            data.attendance.forEach(
+                function(student) {
+
+
+                    const row =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    row.className =
+                        "student";
+
+
+                    const name =
+                        document.createElement(
+                            "span"
+                        );
+
+
+                    name.className =
+                        "name";
+
+
+                    name.textContent =
+                        student.name;
+
+
+                    const time =
+                        document.createElement(
+                            "span"
+                        );
+
+
+                    time.className =
+                        "time";
+
+
+                    time.textContent =
+                        student.time;
+
+
+                    row.appendChild(
+                        name
+                    );
+
+
+                    row.appendChild(
+                        time
+                    );
+
+
+                    list.appendChild(
+                        row
+                    );
+
+                }
+            );
+
+
+        }
+
+        catch (error) {
+
+            console.log(
+                "QR listesi güncellenemedi:",
+                error
+            );
+
+        }
+
+    }
+
+
+    // İlk kontrol
+
+    updateAttendance();
+
+
+    // Her saniye kontrol et
+
+    setInterval(
+        updateAttendance,
+        1000
+    );
+
+
+</script>
+
+
+</body>
+
+</html>

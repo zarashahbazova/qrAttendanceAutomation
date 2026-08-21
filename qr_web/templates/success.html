@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>QR Okuma Başarılı</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 80px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .success {
+            font-size: 60px;
+        }
+
+        h1 {
+            margin-top: 10px;
+        }
+
+        .name {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .info {
+            color: #666;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .home {
+            background: #007bff;
+        }
+
+        .logout {
+            background: #dc3545;
+            margin-left: 10px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <div class="success">
+        ✓
+    </div>
+
+    <h1>
+        QR Okuma Başarılı
+    </h1>
+
+    <p class="name">
+        {{ name }}
+    </p>
+
+    <p class="info">
+        Adınız listeye başarıyla kaydedildi.
+    </p>
+
+
+    <a
+        class="button home"
+        href="{{ url_for('home') }}"
+    >
+        Ana Sayfaya Dön
+    </a>
+
+
+    <a
+        class="button logout"
+        href="{{ url_for('logout') }}"
+    >
+        Çıkış Yap
+    </a>
+
+</div>
+
+</body>
+
+</html>
