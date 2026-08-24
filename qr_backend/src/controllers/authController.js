@@ -1,8 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 const pool = require("../config/database");
-
 
 async function login(req, res) {
 
@@ -46,16 +44,13 @@ async function login(req, res) {
 
         }
 
-
-        const user = result.rows[0];
-
+        const user = result.rows[0]; //kullanici bilgilerini aliyo
 
         const passwordCorrect =
             await bcrypt.compare(
                 password,
                 user.password_hash
-            );
-
+            ); //sifre kontrolü
 
         if (!passwordCorrect) {
 
@@ -65,8 +60,7 @@ async function login(req, res) {
 
         }
 
-
-        const token = jwt.sign(
+        const token = jwt.sign( //login basarliysa jwt olusuturluyo
             {
                 userId: user.id,
                 role: user.role
@@ -75,7 +69,7 @@ async function login(req, res) {
         );
 
 
-        res.json({
+        res.json({ //fluttera gönderiyo token ve bilgileri
 
             message: "Giriş başarılı.",
 
@@ -90,7 +84,7 @@ async function login(req, res) {
 
         });
 
-    } catch (error) {
+    } catch (error) { 
 
         console.error(error);
 

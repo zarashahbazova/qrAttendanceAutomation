@@ -6,48 +6,28 @@ import base64
 import time
 from datetime import datetime
 
-
-# =========================================================
-# FLASK
-# =========================================================
-
+#flask uygulaması oluşturuluyor
 app = Flask(__name__)
 
 app.secret_key = "teacher-panel-secret-key"
 
-
-# =========================================================
-# NODE.JS BACKEND
-# =========================================================
-
+#node.js backend 
 BACKEND_URL = "http://localhost:5001"
 
-
-# =========================================================
-# ÖĞRETMEN HESABI
-# =========================================================
-
+#ögretmen hesabı
 TEACHER_USERNAME = "0000"
 TEACHER_PASSWORD = "1234"
 
-
-# =========================================================
-# AKTİF QR BİLGİLERİ
-# =========================================================
-
+#flaskın kendi raminde tuttugu aktif qr bilgileri
 current_qr_token = None
 current_qr_expires_at = 0
 attendance_window_expires_at = 0
 
-# =========================================================
-# LOGIN
-# =========================================================
-
-@app.route("/", methods=["GET", "POST"])
+#login sayfasi
+@app.route("/", methods=["GET", "POST"]) #istegin login fonksiyonuna gitmesini sağlıyo
 def login():
 
     if request.method == "POST":
-
         username = request.form.get(
             "username",
             ""
@@ -59,8 +39,7 @@ def login():
         )
 
         try:
-
-            response = requests.post(
+            response = requests.post( #öğretmenin yazdiğibilgileri nodejse gönderiyo
                 f"{BACKEND_URL}/auth/login",
                 json={
                     "student_number": username,
@@ -70,35 +49,25 @@ def login():
             )
 
         except requests.RequestException as error:
-
             print(
                 "LOGIN BACKEND HATASI:",
                 error
             )
-
             return render_template(
                 "login.html",
                 error="Backend'e bağlanılamadı."
             )
 
-        # -------------------------------------------------
-        # BAŞARILI LOGIN
-        # -------------------------------------------------
-
+        #başarılı login, nodejsten response geldi
         if response.status_code == 200:
 
             data = response.json()
 
-            user = data.get(
-                "user",
-                {}
-            )
+            user = data.get("user", {})
 
-            token = data.get(
-                "token"
-            )
+            token = data.get("token")
 
-            # Öğretmen hesabı mı?
+            # Öğretmen hesabı mı kontrolü
             if user.get("role") != "teacher":
 
                 return render_template(
@@ -114,10 +83,7 @@ def login():
                     error="Backend token göndermedi."
                 )
 
-            # -------------------------------------------------
-            # SESSION'A KAYDET
-            # -------------------------------------------------
-
+            #sessiona kaydet
             session.clear()
 
             session["role"] = "teacher"
@@ -130,7 +96,7 @@ def login():
                 "full_name"
             )
 
-            # EN ÖNEMLİ SATIR
+            # önemli
             session["teacher_token"] = token
 
             print(
@@ -145,10 +111,7 @@ def login():
                 url_for("teacher")
             )
 
-        # -------------------------------------------------
-        # LOGIN HATASI
-        # -------------------------------------------------
-
+        #login hatasi
         try:
 
             error_message = response.json().get(

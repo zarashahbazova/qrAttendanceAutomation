@@ -1,6 +1,6 @@
-const { Pool } = require("pg");
+const { Pool } = require("pg"); //postgresql kütüphanesi
 
-const pool = new Pool({
+const pool = new Pool({ //database bilgilerini .envden aliyo
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     database: process.env.DB_NAME,
@@ -16,4 +16,4 @@ pool.on("error", (error) => {
     console.error("PostgreSQL hatası:", error);
 });
 
-module.exports = pool;
+module.exports = pool; //bu database bağlantısını başka js dosyaları da kullanabilsin

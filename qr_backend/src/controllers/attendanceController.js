@@ -1,11 +1,7 @@
 const crypto = require("crypto");
 const pool = require("../config/database");
 
-
-// =========================================================
-// ÖĞRETMEN - YOKLAMA BAŞLAT
-// =========================================================
-
+//öğretmen yoklama baslatıyo
 async function createAttendanceSession(req, res) {
     try {
 
@@ -15,7 +11,7 @@ async function createAttendanceSession(req, res) {
             });
         }
 
-        const qrToken = crypto
+        const qrToken = crypto //qrtoken
             .randomBytes(32)
             .toString("hex"); 
 
@@ -48,7 +44,7 @@ async function createAttendanceSession(req, res) {
         res.status(201).json({
             message: "Yoklama başlatıldı.",
             session: result.rows[0]
-        });
+        }); //webe json gönderiliyor
 
     } catch (error) {
 
@@ -77,7 +73,7 @@ async function joinAttendance(req, res) {
             });
         }
 
-        const { qrToken } = req.body;
+        const { qrToken } = req.body; //flutterdan qrtoken aliniyor
 
         if (!qrToken) {
             return res.status(400).json({
@@ -85,7 +81,7 @@ async function joinAttendance(req, res) {
             });
         }
 
-        const sessionResult = await pool.query(
+        const sessionResult = await pool.query( //databaseden token aliniyor
             `
             SELECT *
             FROM attendance_sessions
@@ -111,7 +107,7 @@ async function joinAttendance(req, res) {
             });
         }
 
-        const result = await pool.query(
+        const result = await pool.query( //token geçerliyse
             `
             INSERT INTO attendance_records
             (

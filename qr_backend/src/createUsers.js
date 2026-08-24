@@ -48,7 +48,7 @@ async function createUsers() {
 
         for (const user of users) {
 
-            const passwordHash =
+            const passwordHash = //şifreler hashleniyor
                 await bcrypt.hash(user.password, 10);
 
             await pool.query(
@@ -82,7 +82,7 @@ async function createUsers() {
             error
         );
 
-    } finally {
+    } finally { //tek seferlik
 
         await pool.end();
 

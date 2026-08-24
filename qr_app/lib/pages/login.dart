@@ -39,35 +39,14 @@ class _LoginPageState extends State<LoginPage> {
         password,
       );
 
-      final prefs =
-          await SharedPreferences.getInstance();
-
+      final prefs = await SharedPreferences.getInstance();
       final user = data['user'];
 
-      await prefs.setString(
-        'token',
-        data['token'],
-      );
-
-      await prefs.setString(
-        'user_id',
-        user['id'].toString(),
-      );
-
-      await prefs.setString(
-        'student_number',
-        user['student_number'],
-      );
-
-      await prefs.setString(
-        'full_name',
-        user['full_name'],
-      );
-
-      await prefs.setString(
-        'role',
-        user['role'],
-      );
+      await prefs.setString('token', data['token']);
+      await prefs.setString('user_id', user['id'].toString());
+      await prefs.setString('student_number', user['student_number']);
+      await prefs.setString('full_name', user['full_name']);
+      await prefs.setString('role', user['role']);
 
       if (!mounted) return;
 
@@ -78,13 +57,9 @@ class _LoginPageState extends State<LoginPage> {
         ),
         (route) => false,
       );
-
     } catch (e) {
       showMessage(
-        e.toString().replaceFirst(
-          'Exception: ',
-          '',
-        ),
+        e.toString().replaceFirst('Exception: ', ''),
       );
     } finally {
       if (mounted) {
@@ -98,7 +73,13 @@ class _LoginPageState extends State<LoginPage> {
   void showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        backgroundColor: const Color(0xFF111827),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white, fontSize: 13),
+        ),
       ),
     );
   }
@@ -113,73 +94,146 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Giriş Yap'),
-        centerTitle: true,
-      ),
+      backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-
-              const Icon(
-                Icons.qr_code_2,
-                size: 90,
-              ),
-
-              const SizedBox(height: 30),
-
-              TextField(
-                controller: numberController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Öğrenci Numarası',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              TextField(
-                controller: passwordController,
-                obscureText: obscurePassword,
-                decoration: InputDecoration(
-                  labelText: 'Şifre',
-                  border: const OutlineInputBorder(),
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscurePassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        obscurePassword =
-                            !obscurePassword;
-                      });
-                    },
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 420),
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(0, 0, 0, 0.04),
+                    blurRadius: 20,
+                    offset: Offset(0, 8),
                   ),
-                ),
+                ],
               ),
-
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed:
-                      isLoading ? null : login,
-                  child: isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text('Giriş Yap'),
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'QR OKUMA SİSTEMİ',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  const Text(
+                    'Kullanıcı Numarası',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF334155),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: numberController,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                    decoration: InputDecoration(
+                      hintText: 'Numaranızı girin',
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Color(0xFF0F172A), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Şifre',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF334155),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: obscurePassword,
+                    style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                    decoration: InputDecoration(
+                      hintText: '••••••••',
+                      hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                          size: 20,
+                          color: const Color(0xFF64748B),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            obscurePassword = !obscurePassword;
+                          });
+                        },
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Color(0xFF0F172A), width: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: 46,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF000000),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Giriş Yap',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

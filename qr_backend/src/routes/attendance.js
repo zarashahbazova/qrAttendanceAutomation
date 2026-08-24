@@ -7,7 +7,7 @@ const attendanceController = require("../controllers/attendanceController");
 const router = express.Router();
 
 
-// Öğretmen - yoklama başlat
+// yoklama başlat
 router.post(
     "/session",
     authenticateToken,
@@ -15,7 +15,7 @@ router.post(
 );
 
 
-// Öğrenci - yoklamaya katıl
+// yoklamaya katıl
 router.post(
     "/join",
     authenticateToken,
@@ -23,7 +23,7 @@ router.post(
 );
 
 
-// Öğrenci - katıldığı yoklamalar
+// ögrencinin katıldığı yoklamalar
 router.get(
     "/my",
     authenticateToken,
@@ -31,7 +31,7 @@ router.get(
 );
 
 
-// Öğretmen - mevcut yoklamadaki öğrenciler
+// ögretmen icin mevcut yoklamadaki öğrenciler
 router.get(
     "/current",
     authenticateToken,
