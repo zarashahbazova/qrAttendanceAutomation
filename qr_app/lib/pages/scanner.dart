@@ -30,6 +30,11 @@ class _ScannerPageState extends State<ScannerPage> {
       }
 
       final message = await apiClient.joinAttendance(token, qrToken);
+      if (!mounted) return;
+
+      // Screenshot'ın alınabilmesi için kamerayı
+      // kısa süre açık tut.
+      await Future.delayed(const Duration(seconds: 2));
 
       if (!mounted) return;
 
@@ -42,10 +47,16 @@ class _ScannerPageState extends State<ScannerPage> {
           return AlertDialog(
             backgroundColor: Colors.white,
             surfaceTintColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: const Row(
               children: [
-                Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 24),
+                Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: Color(0xFF10B981),
+                  size: 24,
+                ),
                 SizedBox(width: 8),
                 Text(
                   'Yoklama Başarılı',
@@ -80,7 +91,10 @@ class _ScannerPageState extends State<ScannerPage> {
                     processing = false;
                     if (mounted) setState(() {});
                   },
-                  child: const Text('Tamam', style: TextStyle(fontWeight: FontWeight.w600)),
+                  child: const Text(
+                    'Tamam',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
             ],
@@ -155,7 +169,12 @@ class _ScannerPageState extends State<ScannerPage> {
             child: Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.only(left: 20, top: 12, right: 20, bottom: 12),
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    top: 12,
+                    right: 20,
+                    bottom: 12,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -172,7 +191,9 @@ class _ScannerPageState extends State<ScannerPage> {
                           backgroundColor: Colors.black.withOpacity(0.5),
                         ),
                         icon: Icon(
-                          torchOn ? Icons.flash_on_rounded : Icons.flash_off_rounded,
+                          torchOn
+                              ? Icons.flash_on_rounded
+                              : Icons.flash_off_rounded,
                           color: Colors.white,
                           size: 20,
                         ),
@@ -190,12 +211,18 @@ class _ScannerPageState extends State<ScannerPage> {
                   height: 250,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.9), width: 2),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.9),
+                      width: 2,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.65),
                     borderRadius: BorderRadius.circular(20),

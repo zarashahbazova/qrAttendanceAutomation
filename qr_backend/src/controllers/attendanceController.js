@@ -1,6 +1,8 @@
 const crypto = require("crypto");
 const pool = require("../config/database");
 
+let screenshotEvent = null;
+
 //öğretmen yoklama baslatıyo
 async function createAttendanceSession(req, res) {
     try {
@@ -13,7 +15,7 @@ async function createAttendanceSession(req, res) {
 
         const qrToken = crypto //qrtoken
             .randomBytes(32)
-            .toString("hex"); 
+            .toString("hex");
 
         const createdAt = new Date();
 
@@ -130,6 +132,15 @@ async function joinAttendance(req, res) {
                 message: "Bu yoklamaya zaten katıldınız."
             });
         }
+
+        screenshotEvent = {
+            id: Date.now(),
+            studentId: req.user.userId,
+            sessionId: session.id
+        };
+
+        console.log("📸 SCREENSHOT EVENT OLUŞTU:");
+        console.log(screenshotEvent);
 
         res.json({
             message: "Yoklama başarıyla alındı.",
@@ -253,8 +264,64 @@ async function getCurrentAttendance(req, res) {
         });
     }
 }
+// =========================================================
+// APPIUM - SCREENSHOT EVENTİNİ KONTROL ET
+// =========================================================
 
+async function getScreenshotEvent(req, res) {
 
+    if (!screenshotEvent) {
+        return res.json({
+            event: null
+        });
+    }
+
+    const event = screenshotEvent;
+
+    // Event bir kez okunduktan sonra tekrar tetiklenmesin
+    screenshotEvent = null;
+
+    res.json({
+        event: event
+    });
+}
+// =========================================================
+// FLUTTER - QR ALGILANDIĞINDA SCREENSHOT TETİKLE
+// =========================================================
+
+async function triggerScreenshot(req, res) {
+    try {
+
+        if (req.user.role !== "student") {
+            return res.status(403).json({
+                message: "Sadece öğrenciler screenshot tetikleyebilir."
+            });
+        }
+
+        screenshotEvent = {
+            id: Date.now(),
+            studentId: req.user.userId
+        };
+
+        console.log("📸 QR ALGILANDI - SCREENSHOT TETİKLENDİ:");
+        console.log(screenshotEvent);
+
+        res.json({
+            message: "Screenshot tetiklendi."
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Screenshot trigger hatası:",
+            error
+        );
+
+        res.status(500).json({
+            message: "Screenshot tetiklenemedi."
+        });
+    }
+}
 // =========================================================
 // EXPORT
 // =========================================================
@@ -263,5 +330,8 @@ module.exports = {
     createAttendanceSession,
     joinAttendance,
     getMyAttendance,
-    getCurrentAttendance
+    getCurrentAttendance,
+    getScreenshotEvent,
+    triggerScreenshot
+
 };

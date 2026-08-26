@@ -2,6 +2,8 @@ import os
 import time
 import requests
 import cv2
+import qrcode
+import obsws_python as obs
 
 from dotenv import load_dotenv
 from appium import webdriver
@@ -17,120 +19,95 @@ load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 if not TOKEN:
-    raise Exception("TELEGRAM_BOT_TOKEN bulunamadı!")
+    raise Exception(
+        "TELEGRAM_BOT_TOKEN bulunamadı!"
+    )
 
 BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
+BACKEND_URL = "http://127.0.0.1:5001"
 
-last_update_id = None
-last_chat_id = None
+# ------------------------------------------
+# OBS
+# ------------------------------------------
 
-os.makedirs("received_qr", exist_ok=True)
-os.makedirs("screenshots", exist_ok=True)
+OBS_HOST = "127.0.0.1"
+OBS_PORT = 4455
+OBS_PASSWORD = os.getenv(
+    "OBS_WEBSOCKET_PASSWORD"
+)
+
+OBS_SOURCE_NAME = "Resim"
+
+# QR 30 saniye geçerli
+QR_VALID_SECONDS = 30
+
+# ------------------------------------------
+# Telegram
+# ------------------------------------------
+
+last_chat_id = 8815799297
+
+# ------------------------------------------
+# Klasörler
+# ------------------------------------------
+
+os.makedirs(
+    "screenshots",
+    exist_ok=True
+)
+
+os.makedirs(
+    "generated_qr",
+    exist_ok=True
+)
+
+# QR'ın OBS'de ne zamana kadar kalacağını tutar
+qr_display_until = None
 
 
 # ==========================================
-# TELEGRAM'DAN YENİ MESAJLARI AL
+# BOŞ QR EKRANI OLUŞTUR
 # ==========================================
 
-def get_updates():
+def create_empty_image():
 
-    global last_update_id
-
-    params = {}
-
-    if last_update_id is not None:
-        params["offset"] = last_update_id + 1
-
-    response = requests.get(
-        f"{BASE_URL}/getUpdates",
-        params=params,
-        timeout=10
+    empty_path = os.path.abspath(
+        "generated_qr/empty.png"
     )
 
-    response.raise_for_status()
+    if not os.path.exists(empty_path):
 
-    data = response.json()
-
-    if not data.get("ok"):
-        raise Exception(
-            f"Telegram API hatası: {data}"
+        image = cv2.cvtColor(
+            cv2.UMat(
+                480,
+                640,
+                cv2.CV_8UC3
+            ).get(),
+            cv2.COLOR_BGR2RGB
         )
 
-    return data["result"]
+        image[:, :] = 255
 
-
-# ==========================================
-# TELEGRAM'DAKİ FOTOĞRAFI İNDİR
-# ==========================================
-
-def download_file(file_id):
-
-    response = requests.get(
-        f"{BASE_URL}/getFile",
-        params={
-            "file_id": file_id
-        },
-        timeout=10
-    )
-
-    response.raise_for_status()
-
-    data = response.json()
-
-    if not data.get("ok"):
-        raise Exception(
-            f"Telegram getFile hatası: {data}"
+        cv2.imwrite(
+            empty_path,
+            cv2.cvtColor(
+                image,
+                cv2.COLOR_RGB2BGR
+            )
         )
 
-    file_path = data["result"]["file_path"]
+        print(
+            "✅ empty.png oluşturuldu."
+        )
 
-    file_url = (
-        f"https://api.telegram.org/file/"
-        f"bot{TOKEN}/{file_path}"
-    )
-
-    image_response = requests.get(
-        file_url,
-        timeout=20
-    )
-
-    image_response.raise_for_status()
-
-    local_path = "received_qr/qr.jpg"
-
-    with open(local_path, "wb") as file:
-        file.write(image_response.content)
-
-    return local_path
+    return empty_path
 
 
 # ==========================================
-# FOTOĞRAFTAKİ QR'I OKU
+# APPIUM'A BAĞLAN
 # ==========================================
 
-def read_qr(image_path):
-
-    image = cv2.imread(image_path)
-
-    if image is None:
-        print("❌ Fotoğraf açılamadı.")
-        return None
-
-    detector = cv2.QRCodeDetector()
-
-    data, points, _ = detector.detectAndDecode(image)
-
-    if data:
-        return data.strip()
-
-    return None
-
-
-# ==========================================
-# EN NET SCREENSHOT'I AL
-# ==========================================
-
-def take_best_screenshot():
+def connect_appium():
 
     options = UiAutomator2Options()
 
@@ -138,80 +115,367 @@ def take_best_screenshot():
     options.device_name = "emulator-5554"
     options.automation_name = "UiAutomator2"
 
-    driver = None
-    screenshots = []
+    print()
+    print("======================================")
+    print("📱 APPIUM'A BAĞLANILIYOR...")
+    print("======================================")
+
+    driver = webdriver.Remote(
+        "http://127.0.0.1:4723",
+        options=options
+    )
+
+    print("✅ APPIUM BAĞLANDI.")
+    print("📱 Driver hazır.")
+    print()
+
+    return driver
+
+
+# ==========================================
+# BACKEND'DEN SCREENSHOT EVENTİNİ KONTROL ET
+# ==========================================
+
+def check_screenshot_event():
 
     try:
 
-        print("📱 Appium emulator'e bağlanıyor...")
-
-        driver = webdriver.Remote(
-            "http://127.0.0.1:4723",
-            options=options
+        response = requests.get(
+            f"{BACKEND_URL}/attendance/screenshot-event",
+            timeout=3
         )
 
-        print("✅ Appium bağlandı.")
-        print("📸 3 hızlı screenshot alınıyor...")
+        response.raise_for_status()
 
-        for i in range(3):
+        data = response.json()
 
-            path = f"screenshots/shot_{i}.png"
+        return data.get("event")
 
-            driver.save_screenshot(path)
+    except requests.exceptions.RequestException as e:
 
-            image = cv2.imread(path)
+        print(
+            "❌ Backend event kontrol hatası:"
+        )
 
-            if image is None:
-                print(
-                    f"❌ Screenshot okunamadı: {path}"
-                )
-                continue
+        print(e)
 
-            gray = cv2.cvtColor(
-                image,
-                cv2.COLOR_BGR2GRAY
-            )
+        return None
 
-            sharpness = cv2.Laplacian(
-                gray,
-                cv2.CV_64F
-            ).var()
 
-            screenshots.append(
-                (path, sharpness)
-            )
+# ==========================================
+# OBS WEBSOCKET'E BAĞLAN
+# ==========================================
+
+def connect_obs():
+
+    if not OBS_PASSWORD:
+
+        raise Exception(
+            "OBS_WEBSOCKET_PASSWORD bulunamadı!"
+        )
+
+    print()
+    print("======================================")
+    print("🎥 OBS'YE BAĞLANILIYOR...")
+    print("======================================")
+
+    client = obs.ReqClient(
+        host=OBS_HOST,
+        port=OBS_PORT,
+        password=OBS_PASSWORD
+    )
+
+    print(
+        "✅ OBS WebSocket bağlantısı başarılı."
+    )
+
+    print()
+
+    return client
+
+
+# ==========================================
+# QR TOKEN → QR GÖRÜNTÜSÜ
+# ==========================================
+
+def create_qr_image(qr_data):
+
+    filename = (
+        f"generated_qr/qr_"
+        f"{int(time.time() * 1000)}.png"
+    )
+
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=(
+            qrcode.constants.ERROR_CORRECT_M
+        ),
+        box_size=12,
+        border=4
+    )
+
+    qr.add_data(qr_data)
+
+    qr.make(
+        fit=True
+    )
+
+    image = qr.make_image(
+        fill_color="black",
+        back_color="white"
+    )
+
+    image.save(
+        filename
+    )
+
+    print()
+    print("======================================")
+    print(
+        "✅ YENİ QR GÖRÜNTÜSÜ OLUŞTURULDU"
+    )
+    print("======================================")
+
+    print(
+        "Dosya:",
+        filename
+    )
+
+    print()
+
+    return os.path.abspath(
+        filename
+    )
+
+
+# ==========================================
+# QR GÖRÜNTÜSÜNÜ OBS'YE GÖNDER
+# ==========================================
+
+def send_qr_to_obs(
+    obs_client,
+    qr_image_path
+):
+
+    global qr_display_until
+
+    print(
+        "📺 QR görüntüsü OBS'ye gönderiliyor..."
+    )
+
+    obs_client.set_input_settings(
+        OBS_SOURCE_NAME,
+        {
+            "file": qr_image_path
+        },
+        True
+    )
+
+    # 30 saniyelik süreyi başlat
+    qr_display_until = (
+        time.time()
+        + QR_VALID_SECONDS
+    )
+
+    print(
+        "✅ QR OBS'ye aktarıldı."
+    )
+
+    print(
+        f"⏱️ QR {QR_VALID_SECONDS} saniye "
+        "gösterilecek."
+    )
+
+    print()
+
+
+# ==========================================
+# OBS'DEKİ QR'I TEMİZLE
+# ==========================================
+
+def clear_qr_from_obs(
+    obs_client
+):
+
+    global qr_display_until
+
+    empty_path = create_empty_image()
+
+    print(
+        "⏰ QR süresi doldu."
+    )
+
+    print(
+        "🧹 OBS ekranındaki QR temizleniyor..."
+    )
+
+    obs_client.set_input_settings(
+        OBS_SOURCE_NAME,
+        {
+            "file": empty_path
+        },
+        True
+    )
+
+    qr_display_until = None
+
+    print(
+        "✅ QR OBS'den temizlendi."
+    )
+
+    print()
+
+
+# ==========================================
+# QR SÜRESİNİ KONTROL ET
+# ==========================================
+
+def check_qr_expiration(
+    obs_client
+):
+
+    global qr_display_until
+
+    if qr_display_until is None:
+
+        return
+
+    if time.time() >= qr_display_until:
+
+        clear_qr_from_obs(
+            obs_client
+        )
+
+
+# ==========================================
+# EN NET SCREENSHOT'I AL
+# ==========================================
+
+def take_best_screenshot(
+    driver
+):
+
+    screenshots = []
+
+    print(
+        "📸 3 hızlı screenshot alınıyor..."
+    )
+
+    for i in range(3):
+
+        path = (
+            f"screenshots/shot_{i}.png"
+        )
+
+        print(
+            f"📷 Screenshot {i + 1} alınıyor..."
+        )
+
+        driver.save_screenshot(
+            path
+        )
+
+        image = cv2.imread(
+            path
+        )
+
+        if image is None:
 
             print(
-                f"📷 Fotoğraf {i + 1}: "
-                f"netlik = {sharpness:.2f}"
+                f"❌ Screenshot okunamadı: "
+                f"{path}"
             )
 
-            time.sleep(0.1)
+            continue
 
-        if not screenshots:
-            raise Exception(
-                "Hiç screenshot alınamadı!"
-            )
-
-        best_path, best_score = max(
-            screenshots,
-            key=lambda item: item[1]
+        gray = cv2.cvtColor(
+            image,
+            cv2.COLOR_BGR2GRAY
         )
 
-        print()
-        print("======================================")
-        print("✅ EN NET SCREENSHOT")
-        print("======================================")
-        print("Dosya:", best_path)
-        print(f"Netlik: {best_score:.2f}")
-        print()
+        sharpness = cv2.Laplacian(
+            gray,
+            cv2.CV_64F
+        ).var()
 
-        return best_path
+        screenshots.append(
+            (
+                path,
+                sharpness
+            )
+        )
 
-    finally:
+        print(
+            f"   Netlik = {sharpness:.2f}"
+        )
 
-        if driver:
-            driver.quit()
+        time.sleep(
+            0.1
+        )
+
+    if not screenshots:
+
+        raise Exception(
+            "Hiç screenshot alınamadı!"
+        )
+
+    best_path, best_score = max(
+        screenshots,
+        key=lambda item: item[1]
+    )
+
+    print()
+    print("======================================")
+    print("✅ EN NET SCREENSHOT")
+    print("======================================")
+
+    print(
+        "Dosya:",
+        best_path
+    )
+
+    print(
+        f"Netlik: {best_score:.2f}"
+    )
+
+    print()
+
+    return best_path
+
+
+# ==========================================
+# SCREENSHOT İÇİNDEKİ QR'I OKU
+# ==========================================
+
+def read_qr(
+    image_path
+):
+
+    image = cv2.imread(
+        image_path
+    )
+
+    if image is None:
+
+        print(
+            "❌ Screenshot açılamadı."
+        )
+
+        return None
+
+    detector = cv2.QRCodeDetector()
+
+    data, points, _ = (
+        detector.detectAndDecode(
+            image
+        )
+    )
+
+    if data:
+
+        return data.strip()
+
+    return None
 
 
 # ==========================================
@@ -223,18 +487,26 @@ def send_photo_to_telegram(
     image_path
 ):
 
-    print("📤 Screenshot Telegram'a gönderiliyor...")
+    print(
+        "📤 Screenshot Telegram'a gönderiliyor..."
+    )
 
-    with open(image_path, "rb") as photo:
+    with open(
+        image_path,
+        "rb"
+    ) as photo:
 
         response = requests.post(
             f"{BASE_URL}/sendPhoto",
+
             data={
                 "chat_id": chat_id
             },
+
             files={
                 "photo": photo
             },
+
             timeout=10
         )
 
@@ -243,20 +515,24 @@ def send_photo_to_telegram(
     data = response.json()
 
     if not data.get("ok"):
+
         raise Exception(
-            f"Telegram sendPhoto hatası: {data}"
+            f"Telegram sendPhoto hatası: "
+            f"{data}"
         )
 
-    print("✅ Screenshot Telegram'a gönderildi.")
+    print(
+        "✅ Screenshot Telegram'a gönderildi."
+    )
 
 
 # ==========================================
-# SCREENSHOT + TELEGRAM
+# SCREENSHOT + QR + OBS + TELEGRAM
 # ==========================================
 
-def capture_and_send_screenshot():
-
-    global last_chat_id
+def capture_and_send_screenshot(
+    obs_client
+):
 
     if not last_chat_id:
 
@@ -265,31 +541,151 @@ def capture_and_send_screenshot():
             "Telegram chat ID bulunamadı."
         )
 
-        return False
+        return
+
+    driver = None
 
     try:
 
         print()
-        print("--------------------------------------")
-        print("📱 Screenshot işlemi başlıyor...")
-        print("--------------------------------------")
+        print(
+            "--------------------------------------"
+        )
 
-        best_path = take_best_screenshot()
+        print(
+            "📱 Yeni screenshot işlemi başlıyor..."
+        )
+
+        print(
+            "--------------------------------------"
+        )
+
+        # ----------------------------------
+        # HER EVENT'TE YENİ APPIUM SESSION
+        # ----------------------------------
+
+        driver = connect_appium()
+
+        # ----------------------------------
+        # EN NET SCREENSHOT
+        # ----------------------------------
+
+        best_path = (
+            take_best_screenshot(
+                driver
+            )
+        )
+
+        # ----------------------------------
+        # QR OKU
+        # ----------------------------------
+
+        print(
+            "🔎 Screenshot içindeki QR okunuyor..."
+        )
+
+        qr_data = read_qr(
+            best_path
+        )
+
+        if qr_data:
+
+            print()
+            print(
+                "======================================"
+            )
+
+            print(
+                "✅ SCREENSHOT İÇİNDEKİ QR OKUNDU!"
+            )
+
+            print(
+                "======================================"
+            )
+
+            print(
+                "QR içeriği:"
+            )
+
+            print(
+                qr_data
+            )
+
+            print()
+
+            # ------------------------------
+            # TOKEN → QR PNG
+            # ------------------------------
+
+            qr_image_path = (
+                create_qr_image(
+                    qr_data
+                )
+            )
+
+            # ------------------------------
+            # QR → OBS
+            # ------------------------------
+
+            send_qr_to_obs(
+                obs_client,
+                qr_image_path
+            )
+
+        else:
+
+            print(
+                "❌ Screenshot içindeki QR "
+                "okunamadı."
+            )
+
+        # ----------------------------------
+        # TELEGRAM
+        # ----------------------------------
 
         send_photo_to_telegram(
             last_chat_id,
             best_path
         )
 
-        return True
-
     except Exception as e:
 
         print()
-        print("❌ Screenshot/Telegram hatası:")
+        print(
+            "❌ Screenshot/Telegram hatası:"
+        )
+
         print(e)
 
-        return False
+        print()
+
+    finally:
+
+        # ----------------------------------
+        # APPIUM SESSION'INI KAPAT
+        # ----------------------------------
+
+        if driver:
+
+            try:
+
+                print(
+                    "📱 Appium session kapatılıyor..."
+                )
+
+                driver.quit()
+
+                print(
+                    "✅ Appium session kapatıldı."
+                )
+
+            except Exception as e:
+
+                print(
+                    "⚠️ Appium kapatılırken hata:"
+                )
+
+                print(e)
 
 
 # ==========================================
@@ -297,103 +693,145 @@ def capture_and_send_screenshot():
 # ==========================================
 
 print()
-print("======================================")
-print("Telegram QR dinleyicisi başladı.")
-print("Yeni QR bekleniyor...")
-print("======================================")
+print(
+    "======================================"
+)
+
+print(
+    "Telegram QR dinleyicisi başladı."
+)
+
+print(
+    "======================================"
+)
+
 print()
 
 
-while True:
+# ==========================================
+# BAŞLANGIÇ
+# ==========================================
 
-    try:
+obs_client = None
 
-        updates = get_updates()
+try:
 
-        for update in updates:
+    # --------------------------------------
+    # OBS'YE BAĞLAN
+    # --------------------------------------
 
-            last_update_id = update["update_id"]
+    obs_client = connect_obs()
 
-            message = update.get(
-                "message",
-                {}
+    # --------------------------------------
+    # BOŞ EKRANI HAZIRLA
+    # --------------------------------------
+
+    create_empty_image()
+
+    # --------------------------------------
+    # BAŞLANGIÇTA OBS'Yİ TEMİZLE
+    # --------------------------------------
+
+    print(
+        "🎯 Backend screenshot event'i "
+        "bekleniyor..."
+    )
+
+    print()
+
+    # ======================================
+    # ANA DÖNGÜ
+    # ======================================
+
+    while True:
+
+        try:
+
+            # ------------------------------
+            # QR 30 SANİYESİ DOLDU MU?
+            # ------------------------------
+
+            check_qr_expiration(
+                obs_client
             )
 
-            # ----------------------------------
-            # CHAT ID'Yİ AL
-            # ----------------------------------
+            # ------------------------------
+            # BACKEND EVENT
+            # ------------------------------
 
-            chat_id = message.get(
-                "chat",
-                {}
-            ).get("id")
+            event = (
+                check_screenshot_event()
+            )
 
-            if chat_id:
+            if event:
 
-                last_chat_id = chat_id
-
+                print()
                 print(
-                    f"💬 Telegram chat ID kaydedildi: "
-                    f"{last_chat_id}"
+                    "======================================"
                 )
 
-            # ----------------------------------
-            # FOTOĞRAF VAR MI?
-            # ----------------------------------
+                print(
+                    "📸 SCREENSHOT EVENT ALINDI!"
+                )
 
-            photo = message.get("photo")
+                print(
+                    "======================================"
+                )
 
-            if not photo:
-                continue
+                print(
+                    event
+                )
 
-            print()
-            print("--------------------------------------")
-            print("📷 Telegram'dan fotoğraf geldi!")
-            print("--------------------------------------")
+                print()
 
-            # Telegram'ın en büyük fotoğrafını seç
-            largest_photo = photo[-1]
+                # --------------------------
+                # SCREENSHOT + QR + OBS
+                # --------------------------
 
-            file_id = largest_photo["file_id"]
+                capture_and_send_screenshot(
+                    obs_client
+                )
 
-            # Fotoğrafı indir
-            image_path = download_file(file_id)
+            time.sleep(
+                0.1
+            )
 
-            print("✅ Fotoğraf indirildi:")
-            print(image_path)
-
-            # QR'ı oku
-            qr_data = read_qr(image_path)
-
-            if not qr_data:
-
-                print("❌ QR okunamadı.")
-                print("Yeni QR bekleniyor...")
-                continue
+        except (
+            requests.exceptions.RequestException
+        ) as e:
 
             print()
-            print("✅ QR OKUNDU!")
+            print(
+                "❌ Backend bağlantı hatası:"
+            )
+
+            print(e)
+
+            time.sleep(
+                2
+            )
+
+        except Exception as e:
+
             print()
-            print("QR içeriği:")
-            print(qr_data)
-            print()
+            print(
+                "❌ Ana döngü hatası:"
+            )
 
-            print("Yeni QR bekleniyor...")
+            print(e)
 
-        time.sleep(0.5)
+            time.sleep(
+                2
+            )
 
-    except requests.exceptions.RequestException as e:
+finally:
 
-        print()
-        print("❌ Telegram bağlantı hatası:")
-        print(e)
+    print()
 
-        time.sleep(2)
+    print(
+        "🛑 Telegram QR dinleyicisi kapatılıyor..."
+    )
 
-    except Exception as e:
-
-        print()
-        print("❌ Hata:")
-        print(e)
-
-        time.sleep(2)
+    print(
+        "✅ Program kapatıldı."
+    )

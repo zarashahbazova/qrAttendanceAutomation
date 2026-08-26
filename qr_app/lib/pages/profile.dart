@@ -151,20 +151,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 30),
 
                     _buildInfoRow(
-                      icon: Icons.numbers_rounded,
+                      icon: Icons.book,
                       title: 'Öğrenci Numarası',
                       value: number.isNotEmpty ? number : '-',
                     ),
-                    const Divider(height: 1, color: Color(0xFFF3F4F6), indent: 52),
-                    _buildInfoRow(
-                      icon: Icons.verified_user_outlined,
-                      title: 'Öğrencilik Durumu',
-                      value: 'Aktif',
-                      valueColor: const Color(0xFF10B981),
-                    ),
+                   
                   ],
                 ),
               ),

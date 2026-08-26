@@ -35,27 +35,28 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Color(0xFFE5E7EB), width: 1),
-          ),
+          border: Border(top: BorderSide(color: Color(0xFFE5E7EB), width: 1)),
         ),
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 5),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(
-                  index: 0,
-                  icon: Icons.checklist_rounded,
-                  label: 'Yoklamalar',
+                Expanded(
+                  child: _buildNavItem(
+                    index: 0,
+                    icon: Icons.checklist_rounded,
+                    label: 'Yoklamalar',
+                  ),
                 ),
-                _buildScanNavItem(),
-                _buildNavItem(
-                  index: 2,
-                  icon: Icons.person_outline_rounded,
-                  label: 'Profil',
+                Expanded(child: _buildScanNavItem()),
+                Expanded(
+                  child: _buildNavItem(
+                    index: 2,
+                    icon: Icons.person_outline_rounded,
+                    label: 'Profil',
+                  ),
                 ),
               ],
             ),
@@ -71,18 +72,21 @@ class _HomePageState extends State<HomePage> {
     required String label,
   }) {
     final isSelected = currentIndex == index;
+
     return InkWell(
       onTap: () => setState(() => currentIndex = index),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
               size: 24,
-              color: isSelected ? const Color(0xFF000000) : const Color(0xFF9CA3AF),
+              color: isSelected
+                  ? const Color(0xFF000000)
+                  : const Color(0xFF9CA3AF),
             ),
             const SizedBox(height: 4),
             Text(
@@ -90,7 +94,9 @@ class _HomePageState extends State<HomePage> {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? const Color(0xFF000000) : const Color(0xFF9CA3AF),
+                color: isSelected
+                    ? const Color(0xFF000000)
+                    : const Color(0xFF9CA3AF),
               ),
             ),
           ],
@@ -101,33 +107,39 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildScanNavItem() {
     final isSelected = currentIndex == 1;
+
     return InkWell(
       onTap: () => setState(() => currentIndex = 1),
-      borderRadius: BorderRadius.circular(30),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF000000) : const Color(0xFFF3F4F6),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF000000) : const Color(0xFFE5E7EB),
-          ),
-        ),
-        child: Row(
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.qr_code_scanner_rounded,
-              size: 20,
-              color: isSelected ? Colors.white : const Color(0xFF111827),
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF000000)
+                    : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.qr_code_scanner_rounded,
+                size: 24,
+                color: isSelected ? Colors.white : const Color(0xFF9CA3AF),
+              ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(height: 4),
             Text(
               'Kamera',
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : const Color(0xFF111827),
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected
+                    ? const Color(0xFF000000)
+                    : const Color(0xFF9CA3AF),
               ),
             ),
           ],
