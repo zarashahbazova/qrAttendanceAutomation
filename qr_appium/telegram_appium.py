@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 
-
 # ==========================================
 # AYARLAR
 # ==========================================
@@ -19,9 +18,7 @@ load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 if not TOKEN:
-    raise Exception(
-        "TELEGRAM_BOT_TOKEN bulunamadı!"
-    )
+    raise Exception("TELEGRAM_BOT_TOKEN bulunamadı!")
 
 BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
 BACKEND_URL = "http://127.0.0.1:5001"
@@ -34,9 +31,7 @@ BACKEND_URL = "http://127.0.0.1:5001"
 OBS_HOST = "127.0.0.1"
 OBS_PORT = 4455
 
-OBS_PASSWORD = os.getenv(
-    "OBS_WEBSOCKET_PASSWORD"
-)
+OBS_PASSWORD = os.getenv("OBS_WEBSOCKET_PASSWORD")
 
 OBS_SOURCE_NAME = "Resim"
 
@@ -65,51 +60,33 @@ last_chat_id = 8815799297
 # KLASÖRLER
 # ==========================================
 
-os.makedirs(
-    "screenshots",
-    exist_ok=True
-)
+os.makedirs("screenshots", exist_ok=True)
 
-os.makedirs(
-    "generated_qr",
-    exist_ok=True
-)
+os.makedirs("generated_qr", exist_ok=True)
 
 
 # ==========================================
 # BOŞ EKRAN OLUŞTUR
 # ==========================================
 
+
 def create_empty_image():
 
-    empty_path = os.path.abspath(
-        "generated_qr/empty.png"
-    )
+    empty_path = os.path.abspath("generated_qr/empty.png")
 
     if not os.path.exists(empty_path):
 
-        image = cv2.imread(
-            "generated_qr/empty.png"
-        )
+        image = cv2.imread("generated_qr/empty.png")
 
         if image is None:
 
-            image = (
-                255
-                * __import__("numpy").ones(
-                    (480, 640, 3),
-                    dtype=__import__("numpy").uint8
-                )
+            image = 255 * __import__("numpy").ones(
+                (480, 640, 3), dtype=__import__("numpy").uint8
             )
 
-            cv2.imwrite(
-                empty_path,
-                image
-            )
+            cv2.imwrite(empty_path, image)
 
-        print(
-            "✅ empty.png oluşturuldu."
-        )
+        print("✅ empty.png oluşturuldu.")
 
     return empty_path
 
@@ -117,6 +94,7 @@ def create_empty_image():
 # ==========================================
 # APPIUM'A BAĞLAN
 # ==========================================
+
 
 def connect_appium():
 
@@ -127,30 +105,17 @@ def connect_appium():
     options.automation_name = "UiAutomator2"
 
     print()
-    print(
-        "======================================"
-    )
+    print("======================================")
 
-    print(
-        "📱 APPIUM'A BAĞLANILIYOR..."
-    )
+    print("📱 APPIUM'A BAĞLANILIYOR...")
 
-    print(
-        "======================================"
-    )
+    print("======================================")
 
-    driver = webdriver.Remote(
-        "http://127.0.0.1:4723",
-        options=options
-    )
+    driver = webdriver.Remote("http://127.0.0.1:4723", options=options)
 
-    print(
-        "✅ APPIUM BAĞLANDI."
-    )
+    print("✅ APPIUM BAĞLANDI.")
 
-    print(
-        "📱 Driver hazır."
-    )
+    print("📱 Driver hazır.")
 
     print()
 
@@ -161,36 +126,23 @@ def connect_appium():
 # OBS'YE BAĞLAN
 # ==========================================
 
+
 def connect_obs():
 
     if not OBS_PASSWORD:
 
-        raise Exception(
-            "OBS_WEBSOCKET_PASSWORD bulunamadı!"
-        )
+        raise Exception("OBS_WEBSOCKET_PASSWORD bulunamadı!")
 
     print()
-    print(
-        "======================================"
-    )
+    print("======================================")
 
-    print(
-        "🎥 OBS'YE BAĞLANILIYOR..."
-    )
+    print("🎥 OBS'YE BAĞLANILIYOR...")
 
-    print(
-        "======================================"
-    )
+    print("======================================")
 
-    client = obs.ReqClient(
-        host=OBS_HOST,
-        port=OBS_PORT,
-        password=OBS_PASSWORD
-    )
+    client = obs.ReqClient(host=OBS_HOST, port=OBS_PORT, password=OBS_PASSWORD)
 
-    print(
-        "✅ OBS WebSocket bağlantısı başarılı."
-    )
+    print("✅ OBS WebSocket bağlantısı başarılı.")
 
     print()
 
@@ -201,102 +153,58 @@ def connect_obs():
 # QR TOKEN → QR GÖRÜNTÜSÜ
 # ==========================================
 
+
 def create_qr_image(qr_data):
 
-    filename = (
-        "generated_qr/qr_"
-        f"{int(time.time() * 1000)}.png"
-    )
+    filename = "generated_qr/qr_" f"{int(time.time() * 1000)}.png"
 
     qr = qrcode.QRCode(
         version=None,
-
-        error_correction=(
-            qrcode.constants.ERROR_CORRECT_M
-        ),
-
+        error_correction=(qrcode.constants.ERROR_CORRECT_M),
         box_size=12,
-        border=4
+        border=4,
     )
 
-    qr.add_data(
-        qr_data
-    )
+    qr.add_data(qr_data)
 
-    qr.make(
-        fit=True
-    )
+    qr.make(fit=True)
 
-    image = qr.make_image(
-        fill_color="black",
-        back_color="white"
-    )
+    image = qr.make_image(fill_color="black", back_color="white")
 
-    image.save(
-        filename
-    )
+    image.save(filename)
 
     print()
-    print(
-        "======================================"
-    )
+    print("======================================")
 
-    print(
-        "✅ YENİ QR GÖRÜNTÜSÜ OLUŞTURULDU"
-    )
+    print("✅ YENİ QR GÖRÜNTÜSÜ OLUŞTURULDU")
 
-    print(
-        "======================================"
-    )
+    print("======================================")
 
-    print(
-        "Dosya:",
-        filename
-    )
+    print("Dosya:", filename)
 
     print()
 
-    return os.path.abspath(
-        filename
-    )
+    return os.path.abspath(filename)
 
 
 # ==========================================
 # QR'I OBS'YE GÖNDER
 # ==========================================
 
-def send_qr_to_obs(
-    obs_client,
-    qr_image_path
-):
+
+def send_qr_to_obs(obs_client, qr_image_path):
 
     global qr_display_until
 
-    print(
-        "📺 QR görüntüsü OBS'ye gönderiliyor..."
-    )
+    print("📺 QR görüntüsü OBS'ye gönderiliyor...")
 
-    obs_client.set_input_settings(
-        OBS_SOURCE_NAME,
-        {
-            "file": qr_image_path
-        },
-        True
-    )
+    obs_client.set_input_settings(OBS_SOURCE_NAME, {"file": qr_image_path}, True)
 
-    qr_display_until = (
-        time.time()
-        + QR_VALID_SECONDS
-    )
+    qr_display_until = time.time() + QR_VALID_SECONDS
 
-    print(
-        "✅ QR OBS'ye aktarıldı."
-    )
+    print("✅ QR OBS'ye aktarıldı.")
 
-    print(
-        f"⏱️ QR {QR_VALID_SECONDS} saniye "
-        "gösterilecek."
-    )
+    print(f"⏱️ QR {QR_VALID_SECONDS} saniye " "gösterilecek.")
 
     print()
 
@@ -305,35 +213,22 @@ def send_qr_to_obs(
 # OBS'DEKİ QR'I TEMİZLE
 # ==========================================
 
-def clear_qr_from_obs(
-    obs_client
-):
+
+def clear_qr_from_obs(obs_client):
 
     global qr_display_until
 
     empty_path = create_empty_image()
 
-    print(
-        "⏰ QR süresi doldu."
-    )
+    print("⏰ QR süresi doldu.")
 
-    print(
-        "🧹 OBS ekranındaki QR temizleniyor..."
-    )
+    print("🧹 OBS ekranındaki QR temizleniyor...")
 
-    obs_client.set_input_settings(
-        OBS_SOURCE_NAME,
-        {
-            "file": empty_path
-        },
-        True
-    )
+    obs_client.set_input_settings(OBS_SOURCE_NAME, {"file": empty_path}, True)
 
     qr_display_until = None
 
-    print(
-        "✅ QR OBS'den temizlendi."
-    )
+    print("✅ QR OBS'den temizlendi.")
 
     print()
 
@@ -342,9 +237,8 @@ def clear_qr_from_obs(
 # QR SÜRESİ DOLDU MU?
 # ==========================================
 
-def check_qr_expiration(
-    obs_client
-):
+
+def check_qr_expiration(obs_client):
 
     global qr_display_until
 
@@ -353,22 +247,17 @@ def check_qr_expiration(
 
     if time.time() >= qr_display_until:
 
-        clear_qr_from_obs(
-            obs_client
-        )
+        clear_qr_from_obs(obs_client)
 
 
 # ==========================================
 # QR OKU
 # ==========================================
 
-def read_qr(
-    image_path
-):
 
-    image = cv2.imread(
-        image_path
-    )
+def read_qr(image_path):
+
+    image = cv2.imread(image_path)
 
     if image is None:
 
@@ -376,11 +265,7 @@ def read_qr(
 
     detector = cv2.QRCodeDetector()
 
-    data, points, _ = (
-        detector.detectAndDecode(
-            image
-        )
-    )
+    data, points, _ = detector.detectAndDecode(image)
 
     if data:
 
@@ -393,32 +278,18 @@ def read_qr(
 # TELEGRAM'A FOTO GÖNDER
 # ==========================================
 
-def send_photo_to_telegram(
-    chat_id,
-    image_path
-):
 
-    print(
-        "📤 Screenshot Telegram'a gönderiliyor..."
-    )
+def send_photo_to_telegram(chat_id, image_path):
 
-    with open(
-        image_path,
-        "rb"
-    ) as photo:
+    print("📤 Screenshot Telegram'a gönderiliyor...")
+
+    with open(image_path, "rb") as photo:
 
         response = requests.post(
             f"{BASE_URL}/sendPhoto",
-
-            data={
-                "chat_id": chat_id
-            },
-
-            files={
-                "photo": photo
-            },
-
-            timeout=10
+            data={"chat_id": chat_id},
+            files={"photo": photo},
+            timeout=10,
         )
 
     response.raise_for_status()
@@ -427,25 +298,17 @@ def send_photo_to_telegram(
 
     if not data.get("ok"):
 
-        raise Exception(
-            f"Telegram sendPhoto hatası: {data}"
-        )
+        raise Exception(f"Telegram sendPhoto hatası: {data}")
 
-    print(
-        "✅ Screenshot Telegram'a gönderildi."
-    )
+    print("✅ Screenshot Telegram'a gönderildi.")
 
 
 # ==========================================
 # QR BULUNDUĞUNDA İŞLE
 # ==========================================
 
-def process_qr(
-    driver,
-    obs_client,
-    qr_data,
-    screenshot_path
-):
+
+def process_qr(driver, obs_client, qr_data, screenshot_path):
 
     global last_qr_data
 
@@ -467,27 +330,19 @@ def process_qr(
 
     print("📸 QR screenshot hazır.")
 
-    send_photo_to_telegram(
-        last_chat_id,
-        screenshot_path
-    )
+    send_photo_to_telegram(last_chat_id, screenshot_path)
 
     # --------------------------------------
     # TOKEN → YENİ QR
     # --------------------------------------
 
-    qr_image_path = create_qr_image(
-        qr_data
-    )
+    qr_image_path = create_qr_image(qr_data)
 
     # --------------------------------------
     # YENİ QR → OBS
     # --------------------------------------
 
-    send_qr_to_obs(
-        obs_client,
-        qr_image_path
-    )
+    send_qr_to_obs(obs_client, qr_image_path)
 
     # --------------------------------------
     # SON QR'I HATIRLA
@@ -501,33 +356,24 @@ def process_qr(
     print("======================================")
     print()
 
+
 # ==========================================
 # APPIUM EKRANINI SÜREKLİ KONTROL ET
 # ==========================================
 
-def watch_for_qr(
-    driver,
-    obs_client
-):
+
+def watch_for_qr(driver, obs_client):
 
     global last_qr_data
 
     print()
-    print(
-        "======================================"
-    )
+    print("======================================")
 
-    print(
-        "👀 EMULATOR EKRANI İZLENİYOR..."
-    )
+    print("👀 EMULATOR EKRANI İZLENİYOR...")
 
-    print(
-        "QR görünür görünmez alınacak."
-    )
+    print("QR görünür görünmez alınacak.")
 
-    print(
-        "======================================"
-    )
+    print("======================================")
 
     print()
 
@@ -541,9 +387,7 @@ def watch_for_qr(
             # QR SÜRESİNİ KONTROL ET
             # ----------------------------------
 
-            check_qr_expiration(
-                obs_client
-            )
+            check_qr_expiration(obs_client)
 
             # ----------------------------------
             # ÇOK SIK SCREENSHOT ALMAYALIM
@@ -563,21 +407,15 @@ def watch_for_qr(
             # SCREENSHOT
             # ----------------------------------
 
-            path = (
-                "screenshots/current_scan.png"
-            )
+            path = "screenshots/current_scan.png"
 
-            driver.save_screenshot(
-                path
-            )
+            driver.save_screenshot(path)
 
             # ----------------------------------
             # QR'I OKU
             # ----------------------------------
 
-            qr_data = read_qr(
-                path
-            )
+            qr_data = read_qr(path)
 
             # ----------------------------------
             # QR BULUNDU
@@ -585,29 +423,18 @@ def watch_for_qr(
 
             if qr_data:
 
-                process_qr(
-                    driver,
-                    obs_client,
-                    qr_data,
-                    path
-                )
+                process_qr(driver, obs_client, qr_data, path)
 
-            time.sleep(
-                0.05
-            )
+            time.sleep(0.05)
 
         except Exception as e:
 
             print()
-            print(
-                "⚠️ QR izleme hatası:"
-            )
+            print("⚠️ QR izleme hatası:")
 
             print(e)
 
-            print(
-                "🔄 Appium yeniden bağlanacak."
-            )
+            print("🔄 Appium yeniden bağlanacak.")
 
             break
 
@@ -617,17 +444,11 @@ def watch_for_qr(
 # ==========================================
 
 print()
-print(
-    "======================================"
-)
+print("======================================")
 
-print(
-    "Telegram QR sistemi başladı."
-)
+print("Telegram QR sistemi başladı.")
 
-print(
-    "======================================"
-)
+print("======================================")
 
 print()
 
@@ -646,19 +467,15 @@ try:
 
     create_empty_image()
 
-    print(
-        "🎯 OBS hazır."
-    )
+    print("🎯 OBS hazır.")
 
     print()
-
 
     # ======================================
     # APPIUM
     # ======================================
 
     driver = connect_appium()
-
 
     # ======================================
     # QR İZLE
@@ -668,17 +485,12 @@ try:
 
         try:
 
-            watch_for_qr(
-                driver,
-                obs_client
-            )
+            watch_for_qr(driver, obs_client)
 
         except Exception as e:
 
             print()
-            print(
-                "❌ Appium izleme hatası:"
-            )
+            print("❌ Appium izleme hatası:")
 
             print(e)
 
@@ -694,13 +506,9 @@ try:
                 pass
 
         print()
-        print(
-            "🔄 Appium yeniden bağlanıyor..."
-        )
+        print("🔄 Appium yeniden bağlanıyor...")
 
-        time.sleep(
-            1
-        )
+        time.sleep(1)
 
         driver = connect_appium()
 
@@ -717,6 +525,4 @@ finally:
             pass
 
     print()
-    print(
-        "🛑 Telegram QR sistemi kapatıldı."
-    )
+    print("🛑 Telegram QR sistemi kapatıldı.")

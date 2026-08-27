@@ -6,59 +6,45 @@ import base64
 import time
 from datetime import datetime
 
-#flask uygulaması oluşturuluyor
+# flask uygulaması oluşturuluyor
 app = Flask(__name__)
 
 app.secret_key = "teacher-panel-secret-key"
 
-#node.js backend 
+# node.js backend
 BACKEND_URL = "http://localhost:5001"
 
-#ögretmen hesabı
+# ögretmen hesabı
 TEACHER_USERNAME = "0000"
 TEACHER_PASSWORD = "1234"
 
-#flaskın kendi raminde tuttugu aktif qr bilgileri
+# flaskın kendi raminde tuttugu aktif qr bilgileri
 current_qr_token = None
 current_qr_expires_at = 0
 attendance_window_expires_at = 0
 
-#login sayfasi
-@app.route("/", methods=["GET", "POST"]) #istegin login fonksiyonuna gitmesini sağlıyo
+
+# login sayfasi
+@app.route("/", methods=["GET", "POST"])  # istegin login fonksiyonuna gitmesini sağlıyo
 def login():
 
     if request.method == "POST":
-        username = request.form.get(
-            "username",
-            ""
-        ).strip()
+        username = request.form.get("username", "").strip()
 
-        password = request.form.get(
-            "password",
-            ""
-        )
+        password = request.form.get("password", "")
 
         try:
-            response = requests.post( #öğretmenin yazdiğibilgileri nodejse gönderiyo
+            response = requests.post(  # öğretmenin yazdiğibilgileri nodejse gönderiyo
                 f"{BACKEND_URL}/auth/login",
-                json={
-                    "student_number": username,
-                    "password": password
-                },
-                timeout=5
+                json={"student_number": username, "password": password},
+                timeout=5,
             )
 
         except requests.RequestException as error:
-            print(
-                "LOGIN BACKEND HATASI:",
-                error
-            )
-            return render_template(
-                "login.html",
-                error="Backend'e bağlanılamadı."
-            )
+            print("LOGIN BACKEND HATASI:", error)
+            return render_template("login.html", error="Backend'e bağlanılamadı.")
 
-        #başarılı login, nodejsten response geldi
+        # başarılı login, nodejsten response geldi
         if response.status_code == 200:
 
             data = response.json()
@@ -71,82 +57,59 @@ def login():
             if user.get("role") != "teacher":
 
                 return render_template(
-                    "login.html",
-                    error="Bu hesap öğretmen hesabı değil."
+                    "login.html", error="Bu hesap öğretmen hesabı değil."
                 )
 
             # Token geldi mi?
             if not token:
 
-                return render_template(
-                    "login.html",
-                    error="Backend token göndermedi."
-                )
+                return render_template("login.html", error="Backend token göndermedi.")
 
-            #sessiona kaydet
+            # sessiona kaydet
             session.clear()
 
             session["role"] = "teacher"
 
-            session["username"] = user.get(
-                "student_number"
-            )
+            session["username"] = user.get("student_number")
 
-            session["name"] = user.get(
-                "full_name"
-            )
+            session["name"] = user.get("full_name")
 
             # önemli
             session["teacher_token"] = token
 
-            print(
-                "Öğretmen login başarılı."
-            )
+            print("Öğretmen login başarılı.")
 
-            print(
-                "Teacher token kaydedildi."
-            )
+            print("Teacher token kaydedildi.")
 
-            return redirect(
-                url_for("teacher")
-            )
+            return redirect(url_for("teacher"))
 
-        #login hatasi
+        # login hatasi
         try:
 
             error_message = response.json().get(
-                "message",
-                "Kullanıcı numarası veya şifre yanlış."
+                "message", "Kullanıcı numarası veya şifre yanlış."
             )
 
         except Exception:
 
-            error_message = (
-                "Kullanıcı numarası veya şifre yanlış."
-            )
+            error_message = "Kullanıcı numarası veya şifre yanlış."
 
-        return render_template(
-            "login.html",
-            error=error_message
-        )
+        return render_template("login.html", error=error_message)
 
-    return render_template(
-        "login.html"
-    )
+    return render_template("login.html")
 
 
 # =========================================================
 # ÖĞRETMEN PANELİ
 # =========================================================
 
+
 @app.route("/teacher")
 def teacher():
 
     if session.get("role") != "teacher":
 
-        return redirect(
-            url_for("login")
-        )
+        return redirect(url_for("login"))
 
     global current_qr_token
     global current_qr_expires_at
@@ -160,13 +123,7 @@ def teacher():
 
     if current_qr_token is not None:
 
-        remaining_seconds = max(
-            0,
-            int(
-                current_qr_expires_at
-                - time.time()
-            )
-        )
+        remaining_seconds = max(0, int(current_qr_expires_at - time.time()))
 
         # -------------------------------------------------
         # QR HÂLÂ GEÇERLİ
@@ -174,20 +131,13 @@ def teacher():
 
         if remaining_seconds > 0:
 
-            qr = qrcode.make(
-                current_qr_token
-            )
+            qr = qrcode.make(current_qr_token)
 
             buffer = io.BytesIO()
 
-            qr.save(
-                buffer,
-                format="PNG"
-            )
+            qr.save(buffer, format="PNG")
 
-            qr_image = base64.b64encode(
-                buffer.getvalue()
-            ).decode()
+            qr_image = base64.b64encode(buffer.getvalue()).decode()
 
         # -------------------------------------------------
         # QR SÜRESİ DOLDU
@@ -202,7 +152,7 @@ def teacher():
         "teacher.html",
         qr_image=qr_image,
         remaining_seconds=remaining_seconds,
-        attendance=[]
+        attendance=[],
     )
 
 
@@ -210,53 +160,35 @@ def teacher():
 # YOKLAMAYI BAŞLAT
 # =========================================================
 
-@app.route(
-    "/start-attendance",
-    methods=["POST"]
-)
+
+@app.route("/start-attendance", methods=["POST"])
 def start_attendance():
 
     if session.get("role") != "teacher":
 
-        return redirect(
-            url_for("login")
-        )
+        return redirect(url_for("login"))
 
     global current_qr_token
     global current_qr_expires_at
-    global attendance_window_expires_at 
+    global attendance_window_expires_at
     # -----------------------------------------------------
     # SESSION'DAN JWT AL
     # -----------------------------------------------------
 
-    token = session.get(
-        "teacher_token"
-    )
+    token = session.get("teacher_token")
 
     print("\n==============================")
-    print(
-        "YOKLAMA BAŞLATILIYOR"
-    )
-    print(
-        "Teacher token var mı:",
-        bool(token)
-    )
-    print(
-        "Backend:",
-        BACKEND_URL
-    )
+    print("YOKLAMA BAŞLATILIYOR")
+    print("Teacher token var mı:", bool(token))
+    print("Backend:", BACKEND_URL)
 
     if not token:
 
-        print(
-            "Teacher token bulunamadı."
-        )
+        print("Teacher token bulunamadı.")
 
         session.clear()
 
-        return redirect(
-            url_for("login")
-        )
+        return redirect(url_for("login"))
 
     # -----------------------------------------------------
     # NODE.JS'E YOKLAMA BAŞLATMA İSTEĞİ
@@ -267,21 +199,16 @@ def start_attendance():
         response = requests.post(
             f"{BACKEND_URL}/attendance/session",
             headers={
-                "Authorization":
-                    f"Bearer {token}",
-                "Content-Type":
-                    "application/json"
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
             },
             json={},
-            timeout=5
+            timeout=5,
         )
 
     except requests.RequestException as error:
 
-        print(
-            "NODE.JS BAĞLANTI HATASI:",
-            error
-        )
+        print("NODE.JS BAĞLANTI HATASI:", error)
 
         return """
         <h1>Backend bağlantı hatası</h1>
@@ -289,15 +216,9 @@ def start_attendance():
         <a href="/teacher">Geri dön</a>
         """
 
-    print(
-        "Node.js status:",
-        response.status_code
-    )
+    print("Node.js status:", response.status_code)
 
-    print(
-        "Node.js response:",
-        response.text
-    )
+    print("Node.js response:", response.text)
 
     # -----------------------------------------------------
     # BAŞARILI
@@ -308,74 +229,39 @@ def start_attendance():
 
         data = response.json()
 
-        attendance_session = data.get(
-            "session",
-            {}
-        )
+        attendance_session = data.get("session", {})
 
         # QR TOKEN
-        current_qr_token = (
-            attendance_session.get(
-                "qr_token"
-            )
-        )
+        current_qr_token = attendance_session.get("qr_token")
 
         # SÜRE
-        expires_at = (
-            attendance_session.get(
-                "expires_at"
-            )
-        )
+        expires_at = attendance_session.get("expires_at")
 
         if expires_at:
 
             try:
 
-                expires_at = expires_at.replace(
-                    "Z",
-                    "+00:00"
-                )
+                expires_at = expires_at.replace("Z", "+00:00")
 
-                current_qr_expires_at = (
-                    datetime.fromisoformat(
-                        expires_at
-                    ).timestamp()
-                )
+                current_qr_expires_at = datetime.fromisoformat(expires_at).timestamp()
 
             except Exception as error:
 
-                print(
-                    "Tarih dönüştürme hatası:",
-                    error
-                )
+                print("Tarih dönüştürme hatası:", error)
 
-                current_qr_expires_at = (
-                    time.time() + 120
-                )
+                current_qr_expires_at = time.time() + 120
 
         else:
 
-            current_qr_expires_at = (
-                time.time() + 120
-            )
+            current_qr_expires_at = time.time() + 120
 
-        print(
-            "QR TOKEN:",
-            current_qr_token
-        )
+        print("QR TOKEN:", current_qr_token)
 
-        print(
-            "QR EXPIRES:",
-            current_qr_expires_at
-        )
+        print("QR EXPIRES:", current_qr_expires_at)
 
-        print(
-            "==============================\n"
-        )
+        print("==============================\n")
 
-        return redirect(
-            url_for("teacher")
-        )
+        return redirect(url_for("teacher"))
 
     # -----------------------------------------------------
     # NODE.JS HATASI
@@ -383,21 +269,13 @@ def start_attendance():
 
     try:
 
-        error = response.json().get(
-            "message",
-            "Yoklama başlatılamadı."
-        )
+        error = response.json().get("message", "Yoklama başlatılamadı.")
 
     except Exception:
 
-        error = (
-            "Yoklama başlatılamadı."
-        )
+        error = "Yoklama başlatılamadı."
 
-    print(
-        "YOKLAMA HATASI:",
-        error
-    )
+    print("YOKLAMA HATASI:", error)
 
     return f"""
     <h1>Yoklama başlatılamadı.</h1>
@@ -413,9 +291,7 @@ def start_attendance():
 def teacher_state():
 
     if session.get("role") != "teacher":
-        return {
-            "error": "Yetkisiz"
-        }, 401
+        return {"error": "Yetkisiz"}, 401
 
     global current_qr_token
     global current_qr_expires_at
@@ -430,10 +306,7 @@ def teacher_state():
     # TOPLAM 120 SANİYE KONTROLÜ
     # =====================================================
 
-    if (
-        attendance_window_expires_at > 0
-        and time.time() >= attendance_window_expires_at
-    ):
+    if attendance_window_expires_at > 0 and time.time() >= attendance_window_expires_at:
         current_qr_token = None
         current_qr_expires_at = 0
         attendance_window_expires_at = 0
@@ -442,11 +315,7 @@ def teacher_state():
     # QR YOKSA
     # =====================================================
 
-    if (
-        current_qr_token is None
-        and attendance_window_expires_at > 0
-        and token
-    ):
+    if current_qr_token is None and attendance_window_expires_at > 0 and token:
 
         try:
 
@@ -454,78 +323,49 @@ def teacher_state():
                 f"{BACKEND_URL}/attendance/session",
                 headers={
                     "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
                 json={},
-                timeout=5
+                timeout=5,
             )
 
             if response.status_code in [200, 201]:
 
                 data = response.json()
 
-                attendance_session = data.get(
-                    "session",
-                    {}
-                )
+                attendance_session = data.get("session", {})
 
-                current_qr_token = (
-                    attendance_session.get(
-                        "qr_token"
-                    )
-                )
+                current_qr_token = attendance_session.get("qr_token")
 
-                expires_at = (
-                    attendance_session.get(
-                        "expires_at"
-                    )
-                )
+                expires_at = attendance_session.get("expires_at")
 
                 if expires_at:
 
                     try:
 
-                        expires_at = expires_at.replace(
-                            "Z",
-                            "+00:00"
-                        )
+                        expires_at = expires_at.replace("Z", "+00:00")
 
-                        current_qr_expires_at = (
-                            datetime.fromisoformat(
-                                expires_at
-                            ).timestamp()
-                        )
+                        current_qr_expires_at = datetime.fromisoformat(
+                            expires_at
+                        ).timestamp()
 
                     except Exception:
 
-                        current_qr_expires_at = (
-                            time.time() + 30
-                        )
+                        current_qr_expires_at = time.time() + 30
 
                 else:
 
-                    current_qr_expires_at = (
-                        time.time() + 30
-                    )
+                    current_qr_expires_at = time.time() + 30
 
-                print(
-                    "Yeni QR oluşturuldu:",
-                    current_qr_token
-                )
+                print("Yeni QR oluşturuldu:", current_qr_token)
 
             else:
 
-                print(
-                    "Yeni QR oluşturulamadı:",
-                    response.text
-                )
+                print("Yeni QR oluşturulamadı:", response.text)
 
         except requests.RequestException as error:
 
-            print(
-                "Yeni QR bağlantı hatası:",
-                error
-            )
+            print("Yeni QR bağlantı hatası:", error)
 
     # =====================================================
     # MEVCUT QR
@@ -533,13 +373,7 @@ def teacher_state():
 
     if current_qr_token is not None:
 
-        qr_remaining = max(
-            0,
-            int(
-                current_qr_expires_at
-                - time.time()
-            )
-        )
+        qr_remaining = max(0, int(current_qr_expires_at - time.time()))
 
         # -------------------------------------------------
         # QR SÜRESİ DOLDU
@@ -554,20 +388,13 @@ def teacher_state():
 
             remaining_seconds = qr_remaining
 
-            qr = qrcode.make(
-                current_qr_token
-            )
+            qr = qrcode.make(current_qr_token)
 
             buffer = io.BytesIO()
 
-            qr.save(
-                buffer,
-                format="PNG"
-            )
+            qr.save(buffer, format="PNG")
 
-            qr_image = base64.b64encode(
-                buffer.getvalue()
-            ).decode()
+            qr_image = base64.b64encode(buffer.getvalue()).decode()
 
     # =====================================================
     # YOKLAMA LİSTESİ
@@ -581,49 +408,40 @@ def teacher_state():
 
             response = requests.get(
                 f"{BACKEND_URL}/attendance/current",
-                headers={
-                    "Authorization": f"Bearer {token}"
-                },
-                timeout=5
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=5,
             )
 
             if response.status_code == 200:
 
                 data = response.json()
 
-                attendance = data.get(
-                    "attendance",
-                    []
-                )
+                attendance = data.get("attendance", [])
 
         except requests.RequestException as error:
 
-            print(
-                "Yoklama listesi bağlantı hatası:",
-                error
-            )
+            print("Yoklama listesi bağlantı hatası:", error)
 
     return {
         "qr_image": qr_image,
         "remaining_seconds": remaining_seconds,
-        "attendance": attendance
+        "attendance": attendance,
     }
+
+
 # =========================================================
 # YOKLAMA LİSTESİ
 # =========================================================
+
 
 @app.route("/attendance-list")
 def attendance_list():
 
     if session.get("role") != "teacher":
 
-        return redirect(
-            url_for("login")
-        )
+        return redirect(url_for("login"))
 
-    token = session.get(
-        "teacher_token"
-    )
+    token = session.get("teacher_token")
 
     attendance = []
 
@@ -633,68 +451,48 @@ def attendance_list():
 
             response = requests.get(
                 f"{BACKEND_URL}/attendance/current",
-                headers={
-                    "Authorization":
-                        f"Bearer {token}"
-                },
-                timeout=5
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=5,
             )
 
             if response.status_code == 200:
 
                 data = response.json()
 
-                attendance = data.get(
-                    "attendance",
-                    []
-                )
+                attendance = data.get("attendance", [])
 
             else:
 
-                print(
-                    "Yoklama listesi status:",
-                    response.status_code
-                )
+                print("Yoklama listesi status:", response.status_code)
 
-                print(
-                    "Yoklama listesi response:",
-                    response.text
-                )
+                print("Yoklama listesi response:", response.text)
 
         except requests.RequestException as error:
 
-            print(
-                "Yoklama listesi bağlantı hatası:",
-                error
-            )
+            print("Yoklama listesi bağlantı hatası:", error)
 
-    return render_template(
-        "attendance_list.html",
-        attendance=attendance
-    )
+    return render_template("attendance_list.html", attendance=attendance)
 
 
 # =========================================================
 # ANA SAYFA
 # =========================================================
 
+
 @app.route("/home")
 def home():
 
     if session.get("role") != "teacher":
 
-        return redirect(
-            url_for("login")
-        )
+        return redirect(url_for("login"))
 
-    return redirect(
-        url_for("teacher")
-    )
+    return redirect(url_for("teacher"))
 
 
 # =========================================================
 # LOGOUT
 # =========================================================
+
 
 @app.route("/logout")
 def logout():
@@ -705,13 +503,10 @@ def logout():
     current_qr_token = None
     current_qr_expires_at = 0
 
-
     attendance_window_expires_at = 0
     session.clear()
 
-    return redirect(
-        url_for("login")
-    )
+    return redirect(url_for("login"))
 
 
 # =========================================================
@@ -720,8 +515,4 @@ def logout():
 
 if __name__ == "__main__":
 
-    app.run(
-        host="0.0.0.0",
-        port=5002,
-        debug=True
-    )
+    app.run(host="0.0.0.0", port=5002, debug=True)
