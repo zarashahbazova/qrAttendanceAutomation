@@ -17,6 +17,20 @@ router.post(
     attendanceController.createAttendanceSession
 );
 
+// aynı yoklamanın QR'ını yenile
+router.post(
+    "/session/:sessionId/refresh",
+    authenticateToken,
+    attendanceController.refreshAttendanceQR
+);
+
+// yoklamayı sonlandır
+router.post(
+    "/session/:sessionId/end",
+    authenticateToken,
+    attendanceController.endAttendanceSession
+);
+
 router.post(
     "/screenshot-trigger",
     authenticateToken,
@@ -29,7 +43,11 @@ router.post(
     authenticateToken,
     attendanceController.joinAttendance
 );
-
+router.get(
+    "/history",
+    authenticateToken,
+    attendanceController.getAttendanceHistory
+);
 
 // ögrencinin katıldığı yoklamalar
 router.get(
@@ -45,6 +63,11 @@ router.get(
     authenticateToken,
     attendanceController.getCurrentAttendance
 );
-
+// öğretmenin eski yoklamaları
+router.get(
+    "/history",
+    authenticateToken,
+    attendanceController.getAttendanceHistory
+);
 
 module.exports = router;

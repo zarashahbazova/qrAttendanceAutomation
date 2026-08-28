@@ -2,13 +2,17 @@
 <html lang="tr">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Oluşturma Paneli</title>
 
-    <!-- Modern Font (Inter) -->
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QR Yoklama Paneli</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -40,7 +44,10 @@
             margin: auto;
         }
 
-        /* Üst Başlık & Çıkış Alanı */
+        /* =====================================================
+           HEADER
+           ===================================================== */
+
         .header {
             display: flex;
             justify-content: space-between;
@@ -77,7 +84,10 @@
             border-color: #d1d5db;
         }
 
-        /* 2 Sütunlu Grid Izgara (QR Yanda, Liste Yanda) */
+        /* =====================================================
+           GRID
+           ===================================================== */
+
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1.2fr;
@@ -85,7 +95,6 @@
             align-items: start;
         }
 
-        /* Sol & Sağ Kart Kutuları */
         .panel-box {
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -93,12 +102,32 @@
             padding: 1.5rem;
         }
 
-        /* QR Tarafı */
+        /* =====================================================
+           QR
+           ===================================================== */
+
         .qr-section {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
+        }
+
+        .attendance-title {
+            width: 100%;
+            margin-bottom: 1.25rem;
+        }
+
+        .attendance-title .label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.35rem;
+        }
+
+        .attendance-title h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #111827;
         }
 
         .qr-wrapper {
@@ -117,23 +146,48 @@
             object-fit: contain;
         }
 
-        .timer-badge {
-            display: inline-flex;
+        /* =====================================================
+           TIMER
+           ===================================================== */
+
+        .timer-area {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .timer-box {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.35rem;
-            background: #000000;
-            color: #ffffff;
-            padding: 0.4rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            margin-bottom: 0.6rem;
+        }
+
+        .timer-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .timer-value {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111827;
+            font-variant-numeric: tabular-nums;
         }
 
         .info-text {
             font-size: 0.825rem;
             color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 1rem;
         }
+
+        /* =====================================================
+           BUTTONS
+           ===================================================== */
 
         .action-button {
             width: 100%;
@@ -156,7 +210,28 @@
             transform: scale(0.99);
         }
 
-        /* Liste Tarafı */
+        .end-button {
+            width: 100%;
+            padding: 0.85rem;
+            background-color: #ffffff;
+            color: #111827;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.7rem;
+            transition: all 0.2s ease;
+        }
+
+        .end-button:hover {
+            background-color: #f3f4f6;
+        }
+
+        /* =====================================================
+           LIST
+           ===================================================== */
+
         .list-header {
             display: flex;
             justify-content: space-between;
@@ -234,8 +309,92 @@
             font-size: 0.875rem;
         }
 
-        /* Mobil Cihazlar İçin Duyarlı Düzen */
+        /* =====================================================
+           MODAL
+           ===================================================== */
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 430px;
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal h2 {
+            font-size: 1.1rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .modal p {
+            color: #6b7280;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 1.1rem;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .modal input:focus {
+            border-color: #111827;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 0.7rem;
+            margin-top: 1rem;
+        }
+
+        .modal-button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .modal-cancel {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            color: #111827;
+        }
+
+        .modal-confirm {
+            background: #000000;
+            border: 1px solid #000000;
+            color: #ffffff;
+        }
+
+        /* =====================================================
+           MOBILE
+           ===================================================== */
+
         @media (max-width: 768px) {
+
             body {
                 padding: 1rem 0.75rem;
             }
@@ -257,92 +416,213 @@
             .student-list {
                 max-height: 300px;
             }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
         }
     </style>
+
 </head>
+
 
 <body>
 
     <div class="main-container">
 
+        <!-- =====================================================
+         HEADER
+         ===================================================== -->
+
         <div class="header">
-            <h1>QR Açma Paneli</h1>
+
+            <h1>QR Yoklama Paneli</h1>
+
             <a class="logout-btn" href="{{ url_for('logout') }}">
                 Çıkış Yap
             </a>
+
         </div>
+
 
         <div class="dashboard-grid">
 
-            <!-- ================================= -->
-            <!-- SOL SÜTUN: QR ALANI -->
-            <!-- ================================= -->
+            <!-- =================================================
+             SOL: QR ALANI
+             ================================================= -->
+
             <div class="panel-box qr-section" id="qr-area">
 
                 {% if not qr_image %}
+
                 <p class="info-text" style="margin-bottom: 1.25rem;">
-                    QR henüz açılmadı.
+                    Yeni bir yoklama başlatın.
                 </p>
 
-                <form method="POST" action="/start-attendance" style="width: 100%;">
-                    <button class="action-button" type="submit">
-                        QR'ı Aç
-                    </button>
-                </form>
+                <button class="action-button" type="button" onclick="openStartModal()">
+                    Yeni Yoklama Başlat
+                </button>
+
                 {% else %}
-                <div class="qr-wrapper">
-                    <img id="qr-image" src="data:image/png;base64,{{ qr_image }}" alt="QR">
+
+                <div class="attendance-title">
+
+                    <div class="label">
+                        Aktif Yoklama
+                    </div>
+
+                    <h2 id="attendance-name">
+                        {{ attendance_name or "Yoklama" }}
+                    </h2>
+
                 </div>
 
-                <div class="timer-badge">
-                    QR Değişimine:
-                    <span id="timer">{{ remaining_seconds }}</span>
-                    sn
+
+                <div class="qr-wrapper">
+
+                    <img id="qr-image" src="data:image/png;base64,{{ qr_image }}" alt="QR">
+
                 </div>
+
+
+                <div class="timer-area">
+
+                    <div class="timer-box">
+
+                        <span class="timer-label">
+                            QR değişimine
+                        </span>
+
+                        <span class="timer-value" id="timer">
+                            {{ remaining_seconds }}
+                        </span>
+
+                        <span class="timer-label">
+                            sn
+                        </span>
+
+                    </div>
+
+
+                    <div class="timer-box">
+
+                        <span class="timer-label">
+                            Yoklama bitimine
+                        </span>
+
+                        <span class="timer-value" id="total-timer">
+                            {{ total_remaining_seconds }}
+                        </span>
+
+                        <span class="timer-label">
+                            sn
+                        </span>
+
+                    </div>
+
+                </div>
+
 
                 <p class="info-text">
                     QR kodu 30 saniyede bir yenilenir.
+                    Bu QR'ların tamamı aynı yoklamaya aittir.
                     Toplam yoklama süresi 120 saniyedir.
                 </p>
+                <div style="display: flex; gap: 0.7rem; width: 100%;">
 
-                <form method="POST" action="/start-attendance" style="width: 100%; margin-top: 0.75rem;">
-                    <button class="action-button" type="submit">
-                        Yeniden Aç
+                    <button class="action-button" type="button" id="refresh-qr-button" onclick="refreshQR()">
+                        QR'ı Yenile
                     </button>
-                </form>
+
+                    <button class="end-button" type="button" onclick="confirmEndAttendance()" style="margin-top: 0;">
+                        QR'ı Sonlandır
+                    </button>
+
+                </div>
+
                 {% endif %}
 
             </div>
 
-            <!-- ================================= -->
-            <!-- SAĞ SÜTUN: OKUTAN LİSTESİ -->
-            <!-- ================================= -->
+
+            <!-- =================================================
+             SAĞ: OKUTANLAR
+             ================================================= -->
+
             <div class="panel-box">
 
                 <div class="list-header">
+
                     <h2>QR Okutanlar</h2>
+
                     <span class="count-badge">
-                        <span id="attendance-count">{{ attendance|length }}</span> Kişi
+
+                        <span id="attendance-count">
+                            {{ attendance|length }}
+                        </span>
+
+                        Kişi
+
                     </span>
+
                 </div>
 
+
                 <div class="student-list" id="attendance-list">
+
                     {% if attendance %}
+
                     {% for student in attendance %}
+
                     <div class="student">
+
                         <span class="student-name">
                             {{ student.name }}
                         </span>
+
                         <span class="student-time">
                             {{ student.time }}
                         </span>
+
                     </div>
+
                     {% endfor %}
+
                     {% else %}
+
                     <div class="empty">
-                        Henüz qr okutan yok.
+                        Henüz QR okutan yok.
                     </div>
+
                     {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- =====================================================
+     ESKİ YOKLAMALAR
+     ===================================================== -->
+
+        <div class="panel-box" style="margin-top: 2rem;">
+
+            <div class="list-header">
+
+                <h2>Eski Yoklamalar</h2>
+
+                <span class="count-badge">
+                    <span id="history-count">0</span>
+                    Yoklama
+                </span>
+
+            </div>
+
+            <div id="history-list" class="student-list">
+
+                <div class="empty">
+                    Eski yoklamalar yükleniyor...
                 </div>
 
             </div>
@@ -351,13 +631,568 @@
 
     </div>
 
+
+    <!-- =========================================================
+     YENİ YOKLAMA MODALI
+     ========================================================= -->
+
+    <div class="modal-overlay" id="start-modal">
+
+        <div class="modal">
+
+            <h2>
+                Yeni Yoklama Başlat
+            </h2>
+
+            <p>
+                Yoklamaya daha sonra geçmişten ulaşabilmek için
+                bir isim verin.
+            </p>
+
+            <form method="POST" action="/start-attendance">
+
+                <input type="text" name="attendance_name" id="attendance-name-input"
+                    placeholder="Örn. Veri Yapıları - 1. Ders" maxlength="100" required>
+
+                <div class="modal-buttons">
+
+                    <button type="button" class="modal-button modal-cancel" onclick="closeStartModal()">
+                        İptal
+                    </button>
+
+                    <button type="submit" class="modal-button modal-confirm">
+                        Yoklamayı Başlat
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+     YOKLAMA SONLANDIRMA MODALI
+     ========================================================= -->
+
+    <div class="modal-overlay" id="end-modal">
+
+        <div class="modal">
+
+            <h2>
+                Yoklamayı Sonlandır
+            </h2>
+
+            <p>
+                Aktif yoklamayı sonlandırmak istediğinize
+                emin misiniz?
+            </p>
+
+            <div class="modal-buttons">
+
+                <button type="button" class="modal-button modal-cancel" onclick="closeEndModal()">
+                    Vazgeç
+                </button>
+
+                <button type="button" class="modal-button modal-confirm" onclick="submitEndAttendance()">
+                    Sonlandır
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+     YOKLAMA TAMAMLANDI MODALI
+     ========================================================= -->
+
+    <div class="modal-overlay" id="finished-modal">
+
+        <div class="modal">
+
+            <h2>
+                Yoklama Tamamlandı
+            </h2>
+
+            <p id="finished-message">
+                Yoklama başarıyla kaydedildi.
+            </p>
+
+            <div class="modal-buttons">
+
+                <button type="button" class="modal-button modal-cancel" onclick="goToHome()">
+                    Ana Sayfaya Dön
+                </button>
+
+                <button type="button" class="modal-button modal-confirm" onclick="startNewAttendance()">
+                    Yeni Yoklama
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
     <script>
+
+        /* =====================================================
+           MODAL FONKSİYONLARI
+           ===================================================== */
+
+        function openStartModal() {
+
+            const modal =
+                document.getElementById("start-modal");
+
+            modal.classList.add("show");
+
+            setTimeout(
+                function () {
+
+                    const input =
+                        document.getElementById(
+                            "attendance-name-input"
+                        );
+
+                    if (input) {
+                        input.focus();
+                    }
+
+                },
+                100
+            );
+        }
+
+
+        function closeStartModal() {
+
+            document
+                .getElementById("start-modal")
+                .classList.remove("show");
+        }
+
+
+        function confirmEndAttendance() {
+
+            document
+                .getElementById("end-modal")
+                .classList.add("show");
+        }
+
+
+        function closeEndModal() {
+
+            document
+                .getElementById("end-modal")
+                .classList.remove("show");
+        }
+
+
+        async function submitEndAttendance() {
+
+            const button = document.querySelector("#end-modal .modal-confirm");
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = "Sonlandırılıyor...";
+            }
+
+            try {
+                const response = await fetch("/end-attendance", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!response.ok) {
+                    console.log(
+                        "Yoklama sonlandırılamadı:",
+                        response.status,
+                        await response.text()
+                    );
+                    return;
+                }
+
+                // Flask tarafı yönlendirme yaparsa fetch bunu takip eder;
+                // paneli kesin olarak güncellemek için ana öğretmen sayfasını açıyoruz.
+                window.location.href = "/teacher";
+
+            } catch (error) {
+                console.log("Yoklama sonlandırma hatası:", error);
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = "Sonlandır";
+                }
+            }
+        }
+
+
+        function goToHome() {
+
+            window.location.href =
+                "{{ url_for('home') }}";
+        }
+
+
+        function startNewAttendance() {
+
+            document
+                .getElementById("finished-modal")
+                .classList.remove("show");
+
+            openStartModal();
+        }
+
+
+        /* =====================================================
+           DIŞARI TIKLAYINCA MODAL KAPAT
+           ===================================================== */
+
+        document
+            .getElementById("start-modal")
+            .addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target === this
+                    ) {
+                        closeStartModal();
+                    }
+
+                }
+            );
+
+
+        document
+            .getElementById("end-modal")
+            .addEventListener(
+                "click",
+                function (event) {
+
+                    if (
+                        event.target === this
+                    ) {
+                        closeEndModal();
+                    }
+
+                }
+            );
+
+
+        /* =====================================================
+           QR'I MANUEL YENİLE
+           Aynı yoklama (session) devam eder, sadece QR değişir.
+           ===================================================== */
+
+        async function refreshQR() {
+
+            const button =
+                document.getElementById("refresh-qr-button");
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = "Yenileniyor...";
+            }
+
+            try {
+
+                const response = await fetch("/refresh-qr", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    cache: "no-store"
+                });
+
+                if (!response.ok) {
+                    console.log(
+                        "QR yenilenemedi:",
+                        response.status,
+                        await response.text()
+                    );
+                    return;
+                }
+
+                // Yeni QR'ı backend'den alıp ekrana bas.
+                await updateTeacherScreen();
+
+            } catch (error) {
+
+                console.log(
+                    "QR yenileme hatası:",
+                    error
+                );
+
+            } finally {
+
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = "QR'ı Yenile";
+                }
+            }
+        }
+
+
+        /* =====================================================
+           ÖĞRETMEN EKRANINI GÜNCELLE
+           ===================================================== */
+
         async function updateTeacherScreen() {
 
             try {
 
+                const response =
+                    await fetch(
+                        "/api/teacher-state",
+                        {
+                            cache: "no-store"
+                        }
+                    );
+
+
+                if (!response.ok) {
+                    return;
+                }
+
+
+                const data =
+                    await response.json();
+
+
+                /* =============================================
+                   YOKLAMA TAMAMLANDI
+                   ============================================= */
+
+                if (
+                    data.session_finished === true
+                ) {
+
+                    const message =
+                        document.getElementById(
+                            "finished-message"
+                        );
+
+                    if (message) {
+
+                        message.textContent =
+                            `"${data.attendance_name || "Yoklama"}" yoklaması tamamlandı ve kaydedildi.`;
+
+                    }
+
+                    document
+                        .getElementById("finished-modal")
+                        .classList.add("show");
+
+                    return;
+                }
+
+                /* =============================================
+                   QR
+                   ============================================= */
+
+                const qrArea =
+                    document.getElementById(
+                        "qr-area"
+                    );
+
+
+                const qrImage =
+                    document.getElementById(
+                        "qr-image"
+                    );
+
+
+                if (
+                    qrImage &&
+                    data.qr_image
+                ) {
+
+                    qrImage.src =
+                        "data:image/png;base64," +
+                        data.qr_image;
+
+                }
+
+
+                /* =============================================
+                   YOKLAMA ADI
+                   ============================================= */
+
+                const attendanceName =
+                    document.getElementById(
+                        "attendance-name"
+                    );
+
+
+                if (
+                    attendanceName &&
+                    data.attendance_name
+                ) {
+
+                    attendanceName.textContent =
+                        data.attendance_name;
+
+                }
+
+
+                /* =============================================
+                   QR SAYACI
+                   ============================================= */
+
+                const timer =
+                    document.getElementById(
+                        "timer"
+                    );
+
+
+                if (timer) {
+
+                    timer.textContent =
+                        data.remaining_seconds;
+
+                }
+
+
+                /* =============================================
+                   TOPLAM 120 SN SAYACI
+                   ============================================= */
+
+                const totalTimer =
+                    document.getElementById(
+                        "total-timer"
+                    );
+
+
+                if (totalTimer) {
+
+                    totalTimer.textContent =
+                        data.total_remaining_seconds;
+
+                }
+
+
+                /* =============================================
+                   YOKLAMA SAYISI
+                   ============================================= */
+
+                const count =
+                    document.getElementById(
+                        "attendance-count"
+                    );
+
+
+                if (count) {
+
+                    count.textContent =
+                        data.attendance.length;
+
+                }
+
+
+                /* =============================================
+                   YOKLAMA LİSTESİ
+                   ============================================= */
+
+                const list =
+                    document.getElementById(
+                        "attendance-list"
+                    );
+
+
+                if (!list) {
+                    return;
+                }
+
+
+                list.innerHTML = "";
+
+
+                if (
+                    data.attendance.length === 0
+                ) {
+
+                    list.innerHTML =
+                        `<div class="empty">
+                        Henüz QR okutan yok.
+                    </div>`;
+
+                    return;
+                }
+
+
+                data.attendance.forEach(
+                    function (student) {
+
+                        const row =
+                            document.createElement(
+                                "div"
+                            );
+
+                        row.className =
+                            "student";
+
+
+                        const name =
+                            document.createElement(
+                                "span"
+                            );
+
+                        name.className =
+                            "student-name";
+
+                        name.textContent =
+                            student.name;
+
+
+                        const time =
+                            document.createElement(
+                                "span"
+                            );
+
+                        time.className =
+                            "student-time";
+
+                        time.textContent =
+                            student.time;
+
+
+                        row.appendChild(name);
+
+                        row.appendChild(time);
+
+                        list.appendChild(row);
+
+                    }
+                );
+
+
+            } catch (error) {
+
+                console.log(
+                    "Teacher ekranı güncellenemedi:",
+                    error
+                );
+
+            }
+
+        }
+
+        async function loadAttendanceHistory() {
+
+            try {
+
                 const response = await fetch(
-                    "/api/teacher-state",
+                    "/api/attendance-history",
                     {
                         cache: "no-store"
                     }
@@ -369,122 +1204,149 @@
 
                 const data = await response.json();
 
-                // =============================================
-                // QR
-                // =============================================
-
-                const qrImage =
-                    document.getElementById("qr-image");
-
-                if (qrImage && data.qr_image) {
-
-                    qrImage.src =
-                        "data:image/png;base64," +
-                        data.qr_image;
-                }
-
-                // =============================================
-                // SAYAÇ
-                // =============================================
-
-                const timer =
-                    document.getElementById("timer");
-
-                if (timer) {
-
-                    timer.textContent =
-                        data.remaining_seconds;
-                }
-
-                // =============================================
-                // YOKLAMA SAYISI
-                // =============================================
+                const list =
+                    document.getElementById(
+                        "history-list"
+                    );
 
                 const count =
                     document.getElementById(
-                        "attendance-count"
-                    );
-
-                if (count) {
-
-                    count.textContent =
-                        data.attendance.length;
-                }
-
-                // =============================================
-                // YOKLAMA LİSTESİ
-                // =============================================
-
-                const list =
-                    document.getElementById(
-                        "attendance-list"
+                        "history-count"
                     );
 
                 if (!list) {
                     return;
                 }
 
+                const history =
+                    data.attendance || [];
+
+                if (count) {
+                    count.textContent =
+                        history.length;
+                }
+
                 list.innerHTML = "";
 
-                if (data.attendance.length === 0) {
+                if (history.length === 0) {
 
                     list.innerHTML =
                         `<div class="empty">
-                        Henüz QR okutan yok.
-                    </div>`;
+                    Henüz tamamlanmış yoklama yok.
+                </div>`;
 
                     return;
                 }
 
-                data.attendance.forEach(
-                    function (student) {
+                history.forEach(
+                    function (item) {
 
                         const row =
-                            document.createElement("div");
+                            document.createElement(
+                                "div"
+                            );
 
-                        row.className = "student";
+                        row.className =
+                            "student";
+
+                        const left =
+                            document.createElement(
+                                "div"
+                            );
 
                         const name =
-                            document.createElement("span");
+                            document.createElement(
+                                "div"
+                            );
 
                         name.className =
                             "student-name";
 
                         name.textContent =
-                            student.name;
+                            item.attendance_name ||
+                            "İsimsiz Yoklama";
 
-                        const time =
-                            document.createElement("span");
+                        const date =
+                            document.createElement(
+                                "div"
+                            );
 
-                        time.className =
+                        date.className =
                             "student-time";
 
-                        time.textContent =
-                            student.time;
+                        const created =
+                            new Date(
+                                item.created_at
+                            );
 
-                        row.appendChild(name);
-                        row.appendChild(time);
+                        date.textContent =
+                            created.toLocaleDateString(
+                                "tr-TR"
+                            ) +
+                            " • " +
+                            created.toLocaleTimeString(
+                                "tr-TR",
+                                {
+                                    hour: "2-digit",
+                                    minute: "2-digit"
+                                }
+                            );
+
+                        left.appendChild(name);
+                        left.appendChild(date);
+
+
+                        const count =
+                            document.createElement(
+                                "span"
+                            );
+
+                        count.className =
+                            "count-badge";
+
+                        count.textContent =
+                            item.student_count +
+                            " kişi";
+
+
+                        row.appendChild(left);
+                        row.appendChild(count);
 
                         list.appendChild(row);
+
                     }
                 );
 
             } catch (error) {
 
                 console.log(
-                    "Teacher ekranı güncellenemedi:",
+                    "Eski yoklamalar yüklenemedi:",
                     error
                 );
+
             }
         }
 
+
+        /* =====================================================
+           İLK KONTROL
+           ===================================================== */
+
         updateTeacherScreen();
+
+
+        /* =====================================================
+           HER SANİYE KONTROL
+           ===================================================== */
 
         setInterval(
             updateTeacherScreen,
             1000
         );
+        loadAttendanceHistory();
+
     </script>
+
 
 </body>
 
