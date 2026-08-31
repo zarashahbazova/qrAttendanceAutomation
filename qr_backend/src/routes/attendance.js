@@ -56,13 +56,13 @@ router.get(
     attendanceController.getMyAttendance
 );
 
-
 // ögretmen icin mevcut yoklamadaki öğrenciler
 router.get(
     "/current",
     authenticateToken,
     attendanceController.getCurrentAttendance
 );
+
 // öğretmenin eski yoklamaları
 router.get(
     "/history",

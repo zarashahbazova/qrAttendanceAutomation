@@ -84,7 +84,7 @@ async function login(req, res) {
 
         });
 
-    } catch (error) { 
+    } catch (error) {
 
         console.error(error);
 
@@ -94,7 +94,6 @@ async function login(req, res) {
 
     }
 }
-
 
 module.exports = {
     login

@@ -106,10 +106,7 @@ async function createAttendanceSession(req, res) {
         });
     }
 }
-// =========================================================
-// ÖĞRETMEN - AYNI YOKLAMANIN QR'INI YENİLE
-// =========================================================
-
+//öğretmen- ayni yoklamanın qrını yenile
 async function refreshAttendanceQR(req, res) {
     try {
 
@@ -225,10 +222,8 @@ async function refreshAttendanceQR(req, res) {
         });
     }
 }
-// =========================================================
-// ÖĞRETMEN - YOKLAMAYI SONLANDIR
-// =========================================================
 
+//yoklaamyı sonlandir
 async function endAttendanceSession(req, res) {
     try {
 
@@ -285,10 +280,8 @@ async function endAttendanceSession(req, res) {
         });
     }
 }
-// =========================================================
-// ÖĞRENCİ - YOKLAMAYA KATIL
-// =========================================================
 
+//yoklamaya katıl
 async function joinAttendance(req, res) {
     try {
 
@@ -412,10 +405,7 @@ async function joinAttendance(req, res) {
 }
 
 
-// =========================================================
-// ÖĞRENCİ - KATILDIĞI YOKLAMALAR
-// =========================================================
-
+// katıldıgı yoklamalar
 async function getMyAttendance(req, res) {
     try {
 
@@ -461,9 +451,7 @@ async function getMyAttendance(req, res) {
 }
 
 
-// =========================================================
-// ÖĞRETMEN - AKTİF YOKLAMADAKİ ÖĞRENCİLER
-// =========================================================
+// aktif yoklamadaki öğrenciler
 async function getCurrentAttendance(req, res) {
     try {
 
@@ -527,10 +515,8 @@ async function getCurrentAttendance(req, res) {
         });
     }
 }
-// =========================================================
-// ÖĞRETMEN - ESKİ YOKLAMALAR
-// =========================================================
 
+// eski yoklamalar
 async function getAttendanceHistory(req, res) {
     try {
 
@@ -586,10 +572,7 @@ async function getAttendanceHistory(req, res) {
     }
 }
 
-// =========================================================
-// APPIUM - SCREENSHOT EVENTİNİ KONTROL ET
-// =========================================================
-
+// ss eventini kontrol et (appium)
 async function getScreenshotEvent(req, res) {
 
     if (!screenshotEvent) {
@@ -607,10 +590,8 @@ async function getScreenshotEvent(req, res) {
         event: event
     });
 }
-// =========================================================
-// FLUTTER - QR ALGILANDIĞINDA SCREENSHOT TETİKLE
-// =========================================================
 
+//qr algilandiginda ss tetikle (flutter)
 async function triggerScreenshot(req, res) {
     try {
 
@@ -644,10 +625,8 @@ async function triggerScreenshot(req, res) {
         });
     }
 }
-// =========================================================
-// EXPORT
-// =========================================================
 
+//export
 module.exports = {
     createAttendanceSession,
     refreshAttendanceQR,

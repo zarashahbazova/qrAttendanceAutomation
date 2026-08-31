@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class ApiClient {
 
   static const String baseUrl =
-      'http://192.168.60.23:5001';
+      'http://192.168.60.31:5001';
 
   // Mac üzerinde emulator kullanıyorsan:
   // static const String baseUrl =

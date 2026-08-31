@@ -25,11 +25,7 @@ current_qr_expires_at = 0
 attendance_window_expires_at = 0
 current_attendance_name = None
 
-# =========================================================
-# LOGIN
-# =========================================================
-
-
+# login
 @app.route("/", methods=["GET", "POST"])
 def login():
 
@@ -106,11 +102,7 @@ def login():
     return render_template("login.html")
 
 
-# =========================================================
-# ÖĞRETMEN PANELİ
-# =========================================================
-
-
+# öğretmen paneli
 @app.route("/teacher")
 def teacher():
 
@@ -128,10 +120,7 @@ def teacher():
     remaining_seconds = 0
     total_remaining_seconds = 0
 
-    # -----------------------------------------------------
-    # AKTİF YOKLAMA VAR MI?
-    # -----------------------------------------------------
-
+    # aktif yoklama var mı
     if current_session_id is not None:
 
         # toplam yoklama süresi
@@ -179,11 +168,7 @@ def teacher():
     )
 
 
-# =========================================================
-# YOKLAMAYI BAŞLAT
-# =========================================================
-
-
+# yoklama baslat
 @app.route("/start-attendance", methods=["POST"])
 def start_attendance():
 
@@ -535,7 +520,7 @@ def teacher_state():
 
             qr_image = base64.b64encode(buffer.getvalue()).decode()
 
-       # =====================================================
+    # =====================================================
     # YOKLAMA LİSTESİ
     # =====================================================
 
@@ -547,12 +532,8 @@ def teacher_state():
 
             response = requests.get(
                 f"{BACKEND_URL}/attendance/current",
-                params={
-                    "sessionId": current_session_id
-                },
-                headers={
-                    "Authorization": f"Bearer {token}"
-                },
+                params={"sessionId": current_session_id},
+                headers={"Authorization": f"Bearer {token}"},
                 timeout=5,
             )
 
@@ -560,30 +541,17 @@ def teacher_state():
 
                 data = response.json()
 
-                attendance = data.get(
-                    "attendance",
-                    []
-                )
+                attendance = data.get("attendance", [])
 
             else:
 
-                print(
-                    "Yoklama listesi status:",
-                    response.status_code
-                )
+                print("Yoklama listesi status:", response.status_code)
 
-                print(
-                    "Yoklama listesi response:",
-                    response.text
-                )
+                print("Yoklama listesi response:", response.text)
 
         except requests.RequestException as error:
 
-            print(
-                "Yoklama listesi bağlantı hatası:",
-                error
-            )
-
+            print("Yoklama listesi bağlantı hatası:", error)
 
     return {
         "qr_image": qr_image,
@@ -594,6 +562,7 @@ def teacher_state():
         "session_finished": False,
         "attendance": attendance,
     }
+
 
 @app.route("/refresh-qr", methods=["POST"])
 def refresh_qr():
@@ -616,88 +585,53 @@ def refresh_qr():
     try:
 
         response = requests.post(
-            f"{BACKEND_URL}/attendance/session/"
-            f"{current_session_id}/refresh",
-
+            f"{BACKEND_URL}/attendance/session/" f"{current_session_id}/refresh",
             headers={
                 "Authorization": f"Bearer {token}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-
-            timeout=5
+            timeout=5,
         )
 
         if response.status_code != 200:
 
-            print(
-                "QR yenileme hatası:",
-                response.status_code,
-                response.text
-            )
+            print("QR yenileme hatası:", response.status_code, response.text)
 
-            return {
-                "error": "QR yenilenemedi."
-            }, response.status_code
+            return {"error": "QR yenilenemedi."}, response.status_code
 
         data = response.json()
 
-        attendance_session = data.get(
-            "session",
-            {}
-        )
+        attendance_session = data.get("session", {})
 
-        current_qr_token = attendance_session.get(
-            "qr_token"
-        )
+        current_qr_token = attendance_session.get("qr_token")
 
-        expires_at = attendance_session.get(
-            "expires_at"
-        )
+        expires_at = attendance_session.get("expires_at")
 
         if expires_at:
 
             try:
 
-                expires_at = expires_at.replace(
-                    "Z",
-                    "+00:00"
-                )
+                expires_at = expires_at.replace("Z", "+00:00")
 
-                current_qr_expires_at = datetime.fromisoformat(
-                    expires_at
-                ).timestamp()
+                current_qr_expires_at = datetime.fromisoformat(expires_at).timestamp()
 
             except Exception:
 
-                current_qr_expires_at = (
-                    time.time() + 30
-                )
+                current_qr_expires_at = time.time() + 30
 
         else:
 
-            current_qr_expires_at = (
-                time.time() + 30
-            )
+            current_qr_expires_at = time.time() + 30
 
-        print(
-            "Manuel QR yenilendi:",
-            current_qr_token
-        )
+        print("Manuel QR yenilendi:", current_qr_token)
 
-        return {
-            "success": True
-        }
+        return {"success": True}
 
     except requests.RequestException as error:
 
-        print(
-            "QR yenileme bağlantı hatası:",
-            error
-        )
+        print("QR yenileme bağlantı hatası:", error)
 
-        return {
-            "error": "Backend'e bağlanılamadı."
-        }, 500
+        return {"error": "Backend'e bağlanılamadı."}, 500
 
 
 @app.route("/api/attendance-history")
@@ -802,9 +736,7 @@ def attendance_list():
 
             response = requests.get(
                 f"{BACKEND_URL}/attendance/current",
-                params={
-                    "sessionId": current_session_id
-                },
+                params={"sessionId": current_session_id},
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=5,
             )
