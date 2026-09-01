@@ -15,12 +15,6 @@ from appium.options.android import UiAutomator2Options
 
 load_dotenv()
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-
-if not TOKEN:
-    raise Exception("TELEGRAM_BOT_TOKEN bulunamadı!")
-
-BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
 BACKEND_URL = "http://127.0.0.1:5001"
 
 
@@ -48,12 +42,6 @@ last_qr_data = None
 # OBS'deki QR'ın ne zamana kadar gösterileceği
 qr_display_until = None
 
-
-# ==========================================
-# TELEGRAM
-# ==========================================
-
-last_chat_id = 8815799297
 
 
 # ==========================================
@@ -273,22 +261,19 @@ def read_qr(image_path):
 
     return None
 
+def send_screenshot_to_backend(image_path):
+    print("📤 Screenshot backend'e gönderiliyor...")
 
-# ==========================================
-# TELEGRAM'A FOTO GÖNDER
-# ==========================================
-
-
-def send_photo_to_telegram(chat_id, image_path):
-
-    print("📤 Screenshot Telegram'a gönderiliyor...")
-
-    with open(image_path, "rb") as photo:
-
+    with open(image_path, "rb") as image:
         response = requests.post(
-            f"{BASE_URL}/sendPhoto",
-            data={"chat_id": chat_id},
-            files={"photo": photo},
+            f"{BACKEND_URL}/attendance/screenshot",
+            files={
+                "screenshot": (
+                    "screenshot.png",
+                    image,
+                    "image/png",
+                )
+            },
             timeout=10,
         )
 
@@ -296,12 +281,12 @@ def send_photo_to_telegram(chat_id, image_path):
 
     data = response.json()
 
-    if not data.get("ok"):
+    if not data.get("success"):
+        raise Exception(
+            f"Backend screenshot hatası: {data}"
+        )
 
-        raise Exception(f"Telegram sendPhoto hatası: {data}")
-
-    print("✅ Screenshot Telegram'a gönderildi.")
-
+    print("✅ Screenshot backend'e gönderildi.")
 
 
 def send_screenshot_to_backend(image_path):
@@ -378,7 +363,6 @@ def process_qr(driver, obs_client, qr_data, screenshot_path):
 
     print("📸 QR screenshot hazır.")
 
-    send_photo_to_telegram(last_chat_id, screenshot_path)
     send_screenshot_to_backend(screenshot_path)
     # --------------------------------------
     # TOKEN → YENİ QR

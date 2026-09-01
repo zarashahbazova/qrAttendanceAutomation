@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../services/api_client.dart';
 
 class ScannerPage extends StatefulWidget {
@@ -12,6 +11,7 @@ class ScannerPage extends StatefulWidget {
 }
 
 class _ScannerPageState extends State<ScannerPage> {
+
   final MobileScannerController controller = MobileScannerController();
   final ApiClient apiClient = ApiClient();
   bool processing = false;
@@ -19,11 +19,11 @@ class _ScannerPageState extends State<ScannerPage> {
 
   Future<void> processQr(String qrToken) async {
     if (processing) return;
-    processing = true;
+    processing = true; //tekrar tekrar calismasın
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final token = prefs.getString('token'); //loginde alinan jwt
 
       if (token == null) {
         throw Exception('Oturum bulunamadı.');
@@ -32,8 +32,7 @@ class _ScannerPageState extends State<ScannerPage> {
       final message = await apiClient.joinAttendance(token, qrToken);
       if (!mounted) return;
 
-      // Screenshot'ın alınabilmesi için kamerayı
-      // kısa süre açık tut.
+      // Screenshot'ın alınabilmesi için kamerayı kısa süre açık tut
       await Future.delayed(const Duration(seconds: 2));
 
       if (!mounted) return;
@@ -162,11 +161,11 @@ class _ScannerPageState extends State<ScannerPage> {
         children: [
           MobileScanner(
             controller: controller,
-            onDetect: (capture) {
-              final barcodes = capture.barcodes;
+            onDetect: (capture) { //qr
+              final barcodes = capture.barcodes; 
               if (barcodes.isEmpty) return;
 
-              final value = barcodes.first.rawValue;
+              final value = barcodes.first.rawValue; //qr icindeki veriyi cekiyo
               if (value == null || value.isEmpty) return;
 
               processQr(value);
