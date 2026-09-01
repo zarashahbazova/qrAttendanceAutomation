@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-LAUNCHER = os.path.expanduser("~/Downloads/qrProjesi/camera/apk_launcher.py")
+LAUNCHER = os.path.expanduser("~/Downloads/qrProjesi/qr_camera/apk_launcher.py")
 
 
 # Agent bağlantısını kontrol et

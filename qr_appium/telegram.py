@@ -43,7 +43,6 @@ last_qr_data = None
 qr_display_until = None
 
 
-
 # ==========================================
 # KLASÖRLER
 # ==========================================
@@ -261,6 +260,7 @@ def read_qr(image_path):
 
     return None
 
+
 def send_screenshot_to_backend(image_path):
     print("📤 Screenshot backend'e gönderiliyor...")
 
@@ -282,9 +282,7 @@ def send_screenshot_to_backend(image_path):
     data = response.json()
 
     if not data.get("success"):
-        raise Exception(
-            f"Backend screenshot hatası: {data}"
-        )
+        raise Exception(f"Backend screenshot hatası: {data}")
 
     print("✅ Screenshot backend'e gönderildi.")
 
@@ -309,21 +307,14 @@ def send_screenshot_to_backend(image_path):
     print("✅ Screenshot backend'e gönderildi.")
 
 
-
 def send_screenshot_to_backend(image_path):
     print("📤 Screenshot backend'e gönderiliyor...")
 
     with open(image_path, "rb") as image:
         response = requests.post(
             f"{BACKEND_URL}/attendance/screenshot",
-            files={
-                "screenshot": (
-                    "screenshot.png",
-                    image,
-                    "image/png"
-                )
-            },
-            timeout=10
+            files={"screenshot": ("screenshot.png", image, "image/png")},
+            timeout=10,
         )
 
     response.raise_for_status()
@@ -331,11 +322,11 @@ def send_screenshot_to_backend(image_path):
     data = response.json()
 
     if not data.get("success"):
-        raise Exception(
-            f"Backend screenshot hatası: {data}"
-        )
+        raise Exception(f"Backend screenshot hatası: {data}")
 
     print("✅ Screenshot backend'e gönderildi.")
+
+
 # ==========================================
 # QR BULUNDUĞUNDA İŞLE
 # ==========================================
