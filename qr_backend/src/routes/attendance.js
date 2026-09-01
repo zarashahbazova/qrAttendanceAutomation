@@ -5,11 +5,30 @@ const authenticateToken = require("../middleware/authMiddleware");
 const attendanceController = require("../controllers/attendanceController");
 
 const router = express.Router();
+
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const uploadDir = path.join(__dirname, "../uploads");
+
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, {
+        recursive: true
+    });
+}
+
+const upload = multer({
+    dest: uploadDir
+});
 router.get(
     "/screenshot-event",
     attendanceController.getScreenshotEvent
 );
-
+router.post(
+    "/screenshot",
+    upload.single("screenshot"),
+    attendanceController.receiveScreenshot
+);
 // yoklama başlat
 router.post(
     "/session",
@@ -43,6 +62,7 @@ router.post(
     authenticateToken,
     attendanceController.joinAttendance
 );
+
 router.get(
     "/history",
     authenticateToken,
@@ -69,5 +89,7 @@ router.get(
     authenticateToken,
     attendanceController.getAttendanceHistory
 );
+
+
 
 module.exports = router;

@@ -85,11 +85,18 @@ class _ScannerPageState extends State<ScannerPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.pop(context);
-                    controller.start();
+
+                    if (!controller.value.isRunning) {
+                      await controller.start();
+                    }
+
                     processing = false;
-                    if (mounted) setState(() {});
+
+                    if (mounted) {
+                      setState(() {});
+                    }
                   },
                   child: const Text(
                     'Tamam',

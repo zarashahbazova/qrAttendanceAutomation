@@ -303,6 +303,54 @@ def send_photo_to_telegram(chat_id, image_path):
     print("✅ Screenshot Telegram'a gönderildi.")
 
 
+
+def send_screenshot_to_backend(image_path):
+    print("📤 Screenshot backend'e gönderiliyor...")
+
+    with open(image_path, "rb") as image:
+        response = requests.post(
+            f"{BACKEND_URL}/attendance/screenshot",
+            files={"screenshot": image},
+            timeout=10,
+        )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    if not data.get("success"):
+        raise Exception(f"Backend screenshot hatası: {data}")
+
+    print("✅ Screenshot backend'e gönderildi.")
+
+
+
+def send_screenshot_to_backend(image_path):
+    print("📤 Screenshot backend'e gönderiliyor...")
+
+    with open(image_path, "rb") as image:
+        response = requests.post(
+            f"{BACKEND_URL}/attendance/screenshot",
+            files={
+                "screenshot": (
+                    "screenshot.png",
+                    image,
+                    "image/png"
+                )
+            },
+            timeout=10
+        )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    if not data.get("success"):
+        raise Exception(
+            f"Backend screenshot hatası: {data}"
+        )
+
+    print("✅ Screenshot backend'e gönderildi.")
 # ==========================================
 # QR BULUNDUĞUNDA İŞLE
 # ==========================================
@@ -331,7 +379,7 @@ def process_qr(driver, obs_client, qr_data, screenshot_path):
     print("📸 QR screenshot hazır.")
 
     send_photo_to_telegram(last_chat_id, screenshot_path)
-
+    send_screenshot_to_backend(screenshot_path)
     # --------------------------------------
     # TOKEN → YENİ QR
     # --------------------------------------

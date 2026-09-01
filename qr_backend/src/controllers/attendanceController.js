@@ -625,7 +625,36 @@ async function triggerScreenshot(req, res) {
         });
     }
 }
+async function receiveScreenshot(req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "Screenshot gönderilmedi."
+            });
+        }
 
+        console.log("📸 Screenshot backend'e ulaştı:");
+        console.log(req.file.path);
+
+        res.json({
+            success: true,
+            message: "Screenshot başarıyla alındı.",
+            file: req.file.filename
+        });
+
+    } catch (error) {
+        console.error(
+            "Screenshot alma hatası:",
+            error
+        );
+
+        res.status(500).json({
+            success: false,
+            message: "Screenshot alınamadı."
+        });
+    }
+}
 //export
 module.exports = {
     createAttendanceSession,
@@ -636,5 +665,6 @@ module.exports = {
     getCurrentAttendance,
     getScreenshotEvent,
     getAttendanceHistory,
-    triggerScreenshot
+    triggerScreenshot,
+    receiveScreenshot
 };
