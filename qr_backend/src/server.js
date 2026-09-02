@@ -5,6 +5,7 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/auth");
 const attendanceRoutes = require("./routes/attendance");
+const qrRoutes = require("./routes/qr");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/attendance", attendanceRoutes);
+app.use("/qr", qrRoutes);
 
 app.get("/", (req, res) => {
     res.json({

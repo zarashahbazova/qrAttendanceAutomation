@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, send_file, url_for, session
 import requests
 import qrcode
 import io
@@ -24,6 +24,7 @@ current_qr_token = None
 current_qr_expires_at = 0
 attendance_window_expires_at = 0
 current_attendance_name = None
+
 
 # login
 @app.route("/", methods=["GET", "POST"])
@@ -344,9 +345,97 @@ def start_attendance():
     """
 
 
-# =========================================================
-# ÖĞRETMEN EKRANI API
-# =========================================================
+@app.route("/obs-qr-image")
+def obs_qr_image():
+
+    global current_qr_token
+    global current_qr_expires_at
+    global attendance_window_expires_at
+
+    if current_qr_token is None:
+        return "", 204
+
+    if time.time() >= attendance_window_expires_at:
+        return "", 204
+
+    if time.time() >= current_qr_expires_at:
+        return "", 204
+
+    qr = qrcode.make(current_qr_token)
+
+    buffer = io.BytesIO()
+
+    qr.save(buffer, format="PNG")
+
+    buffer.seek(0)
+
+    return send_file(buffer, mimetype="image/png")
+
+
+@app.route("/obs-qr")
+def obs_qr():
+
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+
+        <style>
+
+            html, body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                background: white;
+                overflow: hidden;
+            }
+
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #qr {
+                width: 80vmin;
+                height: 80vmin;
+                object-fit: contain;
+            }
+
+        </style>
+
+    </head>
+
+    <body>
+
+        <img id="qr" alt="QR">
+
+        <script>
+
+            async function updateQR() {
+
+                const qr = document.getElementById("qr");
+
+                qr.src =
+                    "/obs-qr-image?t=" +
+                    Date.now();
+
+            }
+
+            updateQR();
+
+            setInterval(
+                updateQR,
+                500
+            );
+
+        </script>
+
+    </body>
+    </html>
+    """
 
 
 @app.route("/api/teacher-state")
