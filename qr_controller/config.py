@@ -31,3 +31,5 @@ PUMA_APK_DIR = os.path.join(
     os.path.dirname(__file__),
     "PumaAPK"
 )
+PUMA_USERNAME = os.environ.get("PUMA_USERNAME", "")
+PUMA_PASSWORD = os.environ.get("PUMA_PASSWORD", "")

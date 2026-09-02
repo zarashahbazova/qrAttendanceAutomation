@@ -3,21 +3,25 @@ import time
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 
-from config import DEVICE_ID, PUMA_PACKAGE, PUMA_ACTIVITY
+from config import (
+    DEVICE_ID,
+    PUMA_PACKAGE,
+    PUMA_ACTIVITY,
+    PUMA_USERNAME,
+    PUMA_PASSWORD
+)
 
 
 def connect_to_puma():
+
     options = UiAutomator2Options()
 
     options.platform_name = "Android"
     options.device_name = DEVICE_ID
     options.udid = DEVICE_ID
-
     options.app_package = PUMA_PACKAGE
     options.app_activity = PUMA_ACTIVITY
-
     options.automation_name = "UiAutomator2"
-
     options.no_reset = True
 
     print("Appium → Puma bağlantısı kuruluyor...")
@@ -32,3 +36,40 @@ def connect_to_puma():
     time.sleep(2)
 
     return driver
+
+
+def login_to_puma(driver):
+
+    print("Puma giriş ekranı kontrol ediliyor...")
+
+    edit_texts = driver.find_elements("class name", "android.widget.EditText")
+
+    if len(edit_texts) < 2:
+        print("Login ekranı değil veya giriş alanları bulunamadı.")
+        return False
+
+    print("Login ekranı bulundu.")
+
+    username_field = edit_texts[0]
+    password_field = edit_texts[1]
+
+    username_field.click()
+    username_field.send_keys(PUMA_USERNAME)
+
+    password_field.click()
+    password_field.send_keys(PUMA_PASSWORD)
+
+    print("Öğrenci numarası ve şifre girildi.")
+
+    login_button = driver.find_element(
+        "accessibility id",
+        "Giriş Yap"
+    )
+
+    login_button.click()
+
+    print("Giriş Yap butonuna basıldı.")
+
+    time.sleep(5)
+
+    return True
