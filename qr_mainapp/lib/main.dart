@@ -1,5 +1,4 @@
-import 'dart:convert';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -33,71 +32,120 @@ class ScannerPage extends StatefulWidget {
 }
 
 class _ScannerPageState extends State<ScannerPage> {
+  final MobileScannerController scannerController =
+      MobileScannerController(
+    returnImage: true,
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
+
   bool sending = false;
-  String message = 'QR kodu okutun';
-  String? lastQrData;
+
+  String message = 'QR kodunu kamera alanının ortasına getirin';
+
   final String backendUrl = 'http://192.168.60.30:5001';
 
-  Future<void> sendQrToBackend(String qrData) async {
+  Future<void> sendQrImage(Uint8List imageBytes) async {
     if (sending) return;
 
     setState(() {
       sending = true;
-      message = 'QR backend\'e gönderiliyor...';
+      message = 'QR görüntüsü gönderiliyor...';
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('$backendUrl/qr/scan'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'qrData': qrData}),
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$backendUrl/qr/scan-image'),
       );
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'qrImage',
+          imageBytes,
+          filename: 'qr_capture.jpg',
+          contentType: http.MediaType('image', 'jpeg'),
+
+        ),
+      );
+
+      final response = await request.send();
+
+      if (!mounted) return;
+
+      if (response.statusCode >= 200 &&
+          response.statusCode < 300) {
         setState(() {
-          message = 'QR başarıyla backend\'e gönderildi.';
+          message = 'QR görüntüsü gönderildi.';
         });
       } else {
         setState(() {
-          message = 'Backend hata verdi: ${response.statusCode}';
+          message =
+              'Backend hata verdi: ${response.statusCode}';
         });
       }
     } catch (e) {
+      if (!mounted) return;
+
       setState(() {
         message = 'Backend bağlantısı kurulamadı.';
       });
     } finally {
-      setState(() {
-        sending = false;
-      });
+      if (mounted) {
+        setState(() {
+          sending = false;
+        });
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    scannerController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('QR Yoklama'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('QR Yoklama'),
+        centerTitle: true,
+      ),
       body: Stack(
         children: [
           MobileScanner(
+            controller: scannerController,
+            fit: BoxFit.cover,
             onDetect: (capture) {
               if (sending) return;
 
-              if (capture.barcodes.isEmpty) return;
+              final Uint8List? image = capture.image;
 
-              final barcode = capture.barcodes.first;
-              final String? value = barcode.rawValue;
+              if (image == null || image.isEmpty) {
+                setState(() {
+                  message = 'QR görüntüsü alınamadı.';
+                });
+                return;
+              }
 
-              if (value == null || value.isEmpty) return;
-
-              // Aynı QR daha önce gönderildiyse tekrar gönderme.
-              if (value == lastQrData) return;
-
-              // Bu QR'ı son okutulan QR olarak kaydet.
-              lastQrData = value;
-
-              sendQrToBackend(value);
+              // QR'ın rawValue'sunu KULLANMIYORUZ.
+              // Sadece kameranın aldığı gerçek görüntüyü gönderiyoruz.
+              sendQrImage(image);
             },
+          ),
+
+          Center(
+            child: Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.white,
+                  width: 3,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
           ),
 
           Positioned(
@@ -113,12 +161,18 @@ class _ScannerPageState extends State<ScannerPage> {
               child: Text(
                 message,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
 
-          if (sending) const Center(child: CircularProgressIndicator()),
+          if (sending)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
         ],
       ),
     );
