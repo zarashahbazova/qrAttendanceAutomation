@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 
-const qrController = require("../qrController");
+const qrController = require("./qrController");
 
 const router = express.Router();
 

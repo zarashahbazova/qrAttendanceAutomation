@@ -96,9 +96,16 @@ def login_to_puma(driver):
 
     print("Öğrenci numarası ve şifre girildi.")
 
-    login_button = driver.find_element("accessibility id", "Giriş Yap")
+    try:
+        login_button = driver.find_element(
+            "-android uiautomator",
+            'new UiSelector().text("Giriş Yap")'
+        )
+        login_button.click()
 
-    login_button.click()
+    except Exception:
+        print("Giriş Yap butonu metinle bulunamadı, koordinatla basılıyor.")
+        driver.tap([(360, 2100)])
 
     print("Giriş Yap butonuna basıldı.")
 
