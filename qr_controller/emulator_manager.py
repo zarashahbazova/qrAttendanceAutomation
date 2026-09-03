@@ -51,7 +51,9 @@ def start_emulator():
             [
                 EMULATOR,
                 "-avd",
-                AVD_NAME
+                AVD_NAME,
+                "-camera-back",
+                "webcam1"
             ],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL

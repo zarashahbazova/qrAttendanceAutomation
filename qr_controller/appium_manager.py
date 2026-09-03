@@ -1,5 +1,4 @@
 import time
-
 from appium import webdriver
 from appium.options.android import UiAutomator2Options
 
@@ -42,12 +41,17 @@ def login_to_puma(driver):
 
     print("Puma giriş ekranı kontrol ediliyor...")
 
-    edit_texts = driver.find_elements("class name", "android.widget.EditText")
+    edit_texts = driver.find_elements(
+        "class name",
+        "android.widget.EditText"
+    )
 
+    # Zaten giriş yapılmışsa
     if len(edit_texts) < 2:
-        print("Login ekranı değil veya giriş alanları bulunamadı.")
-        return False
+        print("Zaten giriş yapılmış. Login atlanıyor.")
+        return True
 
+    # Login ekranındaysak
     print("Login ekranı bulundu.")
 
     username_field = edit_texts[0]
@@ -71,5 +75,18 @@ def login_to_puma(driver):
     print("Giriş Yap butonuna basıldı.")
 
     time.sleep(5)
+
+    return True
+
+def open_qr_scanner(driver):
+
+    print("QR Scanner açılıyor...")
+
+    # Puma ana sayfasındaki QR butonu
+    driver.tap([(320, 2270)])
+
+    time.sleep(3)
+
+    print("QR Scanner açıldı.")
 
     return True

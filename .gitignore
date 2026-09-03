@@ -26,4 +26,6 @@ received_qr/
 .DS_Store
 
 # IDE
-qr_controller/PumaAPK/
+.idea/
+
+pumaAPK

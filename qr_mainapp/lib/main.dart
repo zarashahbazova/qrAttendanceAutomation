@@ -36,7 +36,7 @@ class _ScannerPageState extends State<ScannerPage> {
   bool sending = false;
   String message = 'QR kodu okutun';
   String? lastQrData;
-  final String backendUrl = 'http://192.168.60.23:5001';
+  final String backendUrl = 'http://192.168.60.30:5001';
 
   Future<void> sendQrToBackend(String qrData) async {
     if (sending) return;
