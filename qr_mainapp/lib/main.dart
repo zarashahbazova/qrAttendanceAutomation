@@ -42,7 +42,7 @@ class _ScannerPageState extends State<ScannerPage> {
 
   String message = 'QR kodunu kamera alanının ortasına getirin';
 
-  final String backendUrl = 'http://192.168.60.30:5001';
+  final String backendUrl = 'http://192.168.60.32:5001';
 
   Future<void> sendQrImage(Uint8List imageBytes) async {
     if (sending) return;

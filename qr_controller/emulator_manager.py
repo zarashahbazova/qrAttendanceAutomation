@@ -47,16 +47,20 @@ def start_emulator():
     print("qr1 emülatörü başlatılıyor...")
 
     try:
+        command = [
+            EMULATOR,
+            "-avd",
+            AVD_NAME,
+            "-camera-back",
+            "webcam1"
+        ]
+
+        print("Emülatör komutu:", " ".join(command))
+
         subprocess.Popen(
-            [
-                EMULATOR,
-                "-avd",
-                AVD_NAME,
-                "-camera-back",
-                "webcam1"
-            ],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            command,
+            stdout=None,
+            stderr=None
         )
 
         return wait_for_emulator()
@@ -64,8 +68,7 @@ def start_emulator():
     except Exception as e:
         print("Emülatör başlatma hatası:", e)
         return False
-
-
+    
 def wait_for_emulator(timeout=120):
     print("Emülatörün açılması bekleniyor...")
 

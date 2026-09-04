@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify, send_file
 from puma_manager import ensure_puma
 from emulator_manager import start_emulator, is_emulator_running
 from appium_manager import connect_to_puma, login_to_puma, open_qr_scanner
-
+from obs_manager import ensure_virtual_camera
 
 app = Flask(__name__)
 
@@ -201,7 +201,16 @@ def receive_qr():
     os.replace(temp_image, CURRENT_QR_IMAGE)
 
     current_qr_mimetype = "image/jpeg"
+    #OBS + Virtual Camera
+    obs_ready = ensure_virtual_camera()
 
+    if not obs_ready:
+        return jsonify(
+            {
+                "success": False,
+                "message": "OBS başlatılamadı"
+            }
+        ), 500
     emulator_ready = start_emulator()
 
     if not emulator_ready:
