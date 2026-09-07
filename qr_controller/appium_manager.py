@@ -7,6 +7,7 @@ from appium import webdriver
 from appium.options.android import UiAutomator2Options
 
 from config import (
+    ADB,
     DEVICE_ID,
     PUMA_PACKAGE,
     PUMA_ACTIVITY,
@@ -15,11 +16,7 @@ from config import (
 )
 
 
-_DRIVER = None
-
-
 def ensure_appium():
-
     try:
         urllib.request.urlopen(
             "http://127.0.0.1:4723/status",
@@ -53,9 +50,7 @@ def ensure_appium():
     )
 
     for _ in range(30):
-
         try:
-
             urllib.request.urlopen(
                 "http://127.0.0.1:4723/status",
                 timeout=2
@@ -65,40 +60,16 @@ def ensure_appium():
             return True
 
         except Exception:
-
             time.sleep(1)
 
     print("Appium başlatıldı fakat hazır olmadı.")
-
     return False
 
 
 def connect_to_puma():
 
-    global _DRIVER
-
     if not ensure_appium():
         raise RuntimeError("Appium başlatılamadı.")
-
-    # Daha önce kurulmuş çalışan bağlantı varsa onu kullan.
-    if _DRIVER is not None:
-
-        try:
-
-            _DRIVER.current_package
-
-            print("Mevcut Appium Puma bağlantısı kullanılıyor.")
-
-            return _DRIVER
-
-        except Exception:
-
-            try:
-                _DRIVER.quit()
-            except Exception:
-                pass
-
-            _DRIVER = None
 
     options = UiAutomator2Options()
 
@@ -110,12 +81,11 @@ def connect_to_puma():
     options.app_activity = PUMA_ACTIVITY
 
     options.automation_name = "UiAutomator2"
-
     options.no_reset = True
 
     print("Appium → Puma bağlantısı kuruluyor...")
 
-    _DRIVER = webdriver.Remote(
+    driver = webdriver.Remote(
         "http://127.0.0.1:4723",
         options=options
     )
@@ -124,7 +94,7 @@ def connect_to_puma():
 
     time.sleep(2)
 
-    return _DRIVER
+    return driver
 
 
 def login_to_puma(driver):
@@ -184,18 +154,56 @@ def open_qr_scanner(driver):
 
     print("QR Scanner açılıyor...")
 
-    # Önce Puma'yı öne getir.
+    # ÖNEMLİ:
+    # Puma QR Scanner açıksa veya Puma başka bir ekrandaysa,
+    # önce Puma'nın MainActivity'sini yeniden öne getiriyoruz.
+    try:
+
+        result = subprocess.run(
+            [
+                ADB,
+                "-s",
+                DEVICE_ID,
+                "shell",
+                "am",
+                "start",
+                "-n",
+                f"{PUMA_PACKAGE}/{PUMA_ACTIVITY}",
+                "-f",
+                "0x04000000"
+            ],
+            capture_output=True,
+            text=True,
+            timeout=20
+        )
+
+        print(result.stdout)
+
+        if result.returncode != 0:
+            print(result.stderr)
+
+    except Exception as e:
+
+        print("Puma ana ekranına dönme hatası:", e)
+
+    # MainActivity'nin gerçekten ekrana gelmesini bekle.
+    time.sleep(2)
+
     try:
 
         driver.activate_app(PUMA_PACKAGE)
 
-        time.sleep(2)
-
     except Exception as e:
 
-        print("Puma öne getirilemedi:", e)
+        print("Puma activate_app hatası:", e)
 
-    # Puma ana sayfasındaki QR butonu.
+    time.sleep(2)
+
+    print("Puma ana ekranı hazır.")
+
+    # QR butonuna bas.
+    print("Puma QR butonuna basılıyor...")
+
     driver.tap([(320, 2270)])
 
     time.sleep(3)

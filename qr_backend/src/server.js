@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 5001;
 let controllerProcess = null;
 
 
-function isControllerRunning() {
+function isControllerRunning() { //python controller calisiyor mu?
 
     return new Promise((resolve) => {
 
